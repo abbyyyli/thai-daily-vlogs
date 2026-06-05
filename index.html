@@ -152,6 +152,69 @@
       font-size: 0.83rem; font-weight: 700; color: var(--purple);
     }
 
+    .tool-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .private-card {
+      position: relative;
+      background:
+        linear-gradient(135deg, rgba(124,99,192,.10), rgba(242,163,93,.08)),
+        var(--card);
+      border: 1px solid var(--purple-mid);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+
+    .private-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .private-card .title-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 2px 0 4px;
+    }
+
+    .private-card .icon {
+      font-size: 1.08rem;
+      line-height: 1;
+    }
+
+    .private-card h2 {
+      font-size: 1.05rem;
+      font-weight: 820;
+      letter-spacing: -.02em;
+      margin: 0;
+      color: var(--text);
+    }
+
+    .private-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.55;
+    }
+
+    .private-card .go {
+      margin-top: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--purple);
+    }
+
     /* ── Tags ── */
     .tag {
       display: inline-block;
@@ -208,18 +271,32 @@
 
     <div class="eyebrow">Private Hub</div>
     <h1>我的泰文私人入口</h1>
-    <p class="subtitle">這是只給自己用的入口頁，跟公開的學習首頁分開。Daily Vlog 屬於私人內容，只放在這裡。</p>
+    <p class="subtitle">這是只給自己用的入口頁，跟公開的學習首頁分開。Daily Vlog 和 Sentence Collector 屬於私人學習資料，只放在這裡。</p>
 
     <div class="section-group">
       <div class="section-title">私人紀錄</div>
 
-      <a class="feature" href="./thai-vlog-journal.html">
-        <span class="tag lock">🔒 Private</span>
-        <div class="icon">🎥</div>
-        <h2>Thai Daily Vlog Journal</h2>
-        <p>每日生活泰文日記、Key Sentences、單字句型整理與間隔複習（SRS）。資料存在你自己的瀏覽器裡。</p>
-        <span class="go">開啟 Vlog Journal →</span>
-      </a>
+      <div class="tool-grid">
+        <a class="private-card" href="./thai-vlog-journal.html">
+          <span class="tag lock">🔒 Private</span>
+          <div class="title-row">
+            <div class="icon">🎥</div>
+            <h2>Thai Daily Vlog Journal</h2>
+          </div>
+          <p>每日生活泰文日記、自言自語、Key Sentences、單字句型整理與間隔複習（SRS）。資料存在你自己的瀏覽器裡。</p>
+          <span class="go">開啟 Vlog Journal →</span>
+        </a>
+
+        <a class="private-card" href="./thai-sentence-collector.html">
+          <span class="tag lock">🔒 Private</span>
+          <div class="title-row">
+            <div class="icon">🌿</div>
+            <h2>Thai Sentence Collector</h2>
+          </div>
+          <p>精華句庫、最愛句、重點 vocab、notes 與間隔複習（SRS）。適合收藏每天想反覆看的高價值泰文句子。</p>
+          <span class="go">開啟 Sentence Collector →</span>
+        </a>
+      </div>
     </div>
 
     <div class="section-group">
