@@ -112,8 +112,8 @@ function normEntry(e){
   e.id=e.id||uid(); e.date=e.date||today(); e.title=e.title||'Untitled Vlog';
   e.mood=Array.isArray(e.mood)?e.mood:(e.mood?String(e.mood).split(',').map(x=>x.trim()).filter(Boolean):[]);
   e.tags=Array.isArray(e.tags)?e.tags:(e.tags?String(e.tags).split(',').map(x=>x.trim()).filter(Boolean):[]);
-  e.sentences=(e.sentences||[]).map((s,i)=>({id:s.id||uid(),thai:s.thai||'',roman:s.roman||'',english:s.english||s.eng||'',chinese:s.chinese||s.zh||'',type:s.type||'vlog',key:!!s.key,favorite:!!s.favorite,interval:s.interval||1,ease:s.ease||2.5,next_review:s.next_review||today(),last_review:s.last_review||null,review_count:s.review_count||0,vocab:Array.isArray(s.vocab)?s.vocab:[]}));
-  e.key_sentences=(e.key_sentences||[]).map((s,i)=>({id:s.id||uid(),thai:s.thai||'',roman:s.roman||'',english:s.english||s.eng||'',chinese:s.chinese||s.zh||'',key:true,favorite:!!s.favorite,interval:s.interval||1,ease:s.ease||2.5,next_review:s.next_review||today(),last_review:s.last_review||null,review_count:s.review_count||0,vocab:Array.isArray(s.vocab)?s.vocab:[]}));
+  e.sentences=(e.sentences||[]).map((s,i)=>({id:s.id||uid(),thai:s.thai||'',roman:s.roman||'',english:s.english||s.eng||'',chinese:s.chinese||s.zh||'',type:s.type||'vlog',key:!!s.key,favorite:!!s.favorite,favorite_updated_at:s.favorite_updated_at||null,interval:s.interval||1,ease:s.ease||2.5,next_review:s.next_review||today(),last_review:s.last_review||null,review_count:s.review_count||0,vocab:Array.isArray(s.vocab)?s.vocab:[]}));
+  e.key_sentences=(e.key_sentences||[]).map((s,i)=>({id:s.id||uid(),thai:s.thai||'',roman:s.roman||'',english:s.english||s.eng||'',chinese:s.chinese||s.zh||'',key:true,favorite:!!s.favorite,favorite_updated_at:s.favorite_updated_at||null,interval:s.interval||1,ease:s.ease||2.5,next_review:s.next_review||today(),last_review:s.last_review||null,review_count:s.review_count||0,vocab:Array.isArray(s.vocab)?s.vocab:[]}));
   e.vocab=e.vocab||[]; e.patterns=e.patterns||[]; e.collocations=e.collocations||[]; e.notes=e.notes||'';
   return e;
 }
@@ -142,7 +142,7 @@ function analysisSection(title,arr){if(!arr||!arr.length)return '';return `<div 
 function renderFavs(){let items=[];data.entries.forEach(e=>e.sentences.concat(e.key_sentences).filter(s=>s.favorite).forEach(s=>items.push({e,s})));const el=document.getElementById('fav-list');if(!items.length){el.innerHTML='<div class="empty"><div class="big">♥</div>還沒有最愛句子</div>';return}el.innerHTML=items.map(({e,s})=>`<div class="journal-card"><div class="date">${esc(e.date)}｜${esc(e.title)}</div>${sentenceList([s],e.id)}</div>`).join('')}
 function renderReview(){const all=allReviewItems();const due=all.filter(x=>isDue(x.item));document.getElementById('stats-row').innerHTML=`<div class="stat"><div class="num">${due.length}</div><div class="lbl">今日待複習</div></div><div class="stat"><div class="num">${all.filter(x=>x.item.last_review===today()).length}</div><div class="lbl">今日已複習</div></div><div class="stat"><div class="num">${all.length}</div><div class="lbl">複習句總數</div></div>`;const el=document.getElementById('review-list');if(!due.length){el.innerHTML='<div class="empty"><div class="big">✅</div>今天沒有待複習的 Vlog 句子</div>';return}el.innerHTML=due.map(({entry,item})=>`<div class="review-item" id="rev-${item.id}"><div class="date">${esc(entry.date)}｜${esc(entry.title)}</div>${sentenceList([item],entry.id)}<div class="rating-row"><button class="rating-btn r0" onclick="rateItem('${entry.id}','${item.id}',0)">😰 忘了</button><button class="rating-btn r1" onclick="rateItem('${entry.id}','${item.id}',1)">🤔 模糊</button><button class="rating-btn r2" onclick="rateItem('${entry.id}','${item.id}',2)">😊 記得</button><button class="rating-btn r3" onclick="rateItem('${entry.id}','${item.id}',3)">⭐ 很熟</button></div></div>`).join('')}
 function rateItem(eid,sid,r){const e=data.entries.find(x=>x.id===eid);if(!e)return;const s=e.sentences.concat(e.key_sentences).find(x=>x.id===sid);if(!s)return;sm2(s,r);save();renderReview()}
-function toggleSentFav(eid,sid){const e=data.entries.find(x=>x.id===eid);if(!e)return;const s=e.sentences.concat(e.key_sentences).find(x=>x.id===sid);if(!s)return;s.favorite=!s.favorite;save();renderJournal();renderKeys();renderFavs()}
+function toggleSentFav(eid,sid){const e=data.entries.find(x=>x.id===eid);if(!e)return;const s=e.sentences.concat(e.key_sentences).find(x=>x.id===sid);if(!s)return;s.favorite=!s.favorite;s.favorite_updated_at=new Date().toISOString();save();renderJournal();renderKeys();renderFavs()}
 function playEntry(eid,btn){const e=data.entries.find(x=>x.id===eid);if(!e)return;speak(e.sentences.map(s=>s.thai).join('。'),btn)}
 function deleteEntry(eid){if(!confirm('確定刪除這篇 Vlog？'))return;data.entries=data.entries.filter(e=>e.id!==eid);save();renderJournal()}
 function addVlogFromForm(){let raw=document.getElementById('f-json').value.trim();let e;if(raw){try{e=JSON.parse(raw)}catch(err){alert('JSON 格式錯誤');return}}else{e={date:document.getElementById('f-date').value||today(),title:document.getElementById('f-title').value||'Untitled Vlog',mood:document.getElementById('f-mood').value,tags:document.getElementById('f-tags').value,sentences:[]}}; e.date=e.date||document.getElementById('f-date').value||today();e.title=e.title||document.getElementById('f-title').value||'Untitled Vlog';if(!e.mood)e.mood=document.getElementById('f-mood').value;if(!e.tags)e.tags=document.getElementById('f-tags').value;data.entries.unshift(normEntry(e));save();document.getElementById('f-json').value='';renderJournal()}
@@ -160,14 +160,39 @@ function reviewScoreOfEntry(e){
   return score;
 }
 
+function mergeFavoriteState(local, incoming){
+  const localFav=!!local.favorite;
+  const incomingFav=!!incoming.favorite;
+  const localTime=local.favorite_updated_at||'';
+  const incomingTime=incoming.favorite_updated_at||'';
+
+  // If both sides have timestamps, the newer favorite action wins.
+  if(localTime || incomingTime){
+    if(incomingTime && (!localTime || incomingTime>localTime)){
+      local.favorite=incomingFav;
+      local.favorite_updated_at=incomingTime;
+    }else{
+      local.favorite=localFav;
+      local.favorite_updated_at=localTime||null;
+    }
+  }else{
+    // Old exported files have no timestamp. Preserve any existing favorite to avoid accidental loss.
+    local.favorite=localFav || incomingFav;
+  }
+}
+
 function mergeSentenceList(localList, incomingList){
   const index=new Map((localList||[]).map(s=>[s.id,s]));
   (incomingList||[]).forEach(s=>{
     if(!s.id){s.id=uid();}
     if(index.has(s.id)){
       const local=index.get(s.id);
+      const localFavoriteSnapshot={favorite:local.favorite,favorite_updated_at:local.favorite_updated_at};
+
       if((s.review_count||0)>(local.review_count||0)){
         Object.assign(local,s);
+        local.favorite=localFavoriteSnapshot.favorite;
+        local.favorite_updated_at=localFavoriteSnapshot.favorite_updated_at;
       }else{
         // Keep local review progress, but allow text corrections from import when local has no content.
         ['thai','roman','english','chinese','type','key','vocab'].forEach(k=>{
@@ -175,6 +200,8 @@ function mergeSentenceList(localList, incomingList){
           else if((local[k]===undefined||local[k]===''||local[k]===false) && s[k]) local[k]=s[k];
         });
       }
+
+      mergeFavoriteState(local,s);
     }else{
       localList.push(s);
       index.set(s.id,s);
