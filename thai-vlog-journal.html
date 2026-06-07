@@ -122,7 +122,149 @@ function isDue(s){return !s.next_review||s.next_review<=today()}
 function sm2(s,r){const now=new Date();if(r===0){s.interval=1;s.ease=Math.max(1.3,(s.ease||2.5)-.3)}else if(r===1){s.interval=1;s.ease=Math.max(1.3,(s.ease||2.5)-.15)}else if(r===2){s.interval=s.interval<=1?3:Math.round(s.interval*(s.ease||2.5))}else{s.interval=s.interval<=1?4:Math.round(s.interval*(s.ease||2.5));s.ease=Math.min(3,(s.ease||2.5)+.1)}s.last_review=today();let n=new Date();n.setDate(n.getDate()+s.interval);s.next_review=n.toISOString().slice(0,10);s.review_count=(s.review_count||0)+1}
 function showPage(n){document.querySelectorAll('.page').forEach((p,i)=>p.classList.toggle('active',i===n));document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',i===n)); if(n===0)renderJournal(); if(n===1)renderKeys(); if(n===2)renderAnalysis(); if(n===3)renderFavs(); if(n===4)renderReview()}
 function toggleQuickAdd(){document.getElementById('quick-add-panel').classList.toggle('open')}
-function speak(text,btn){if(!('speechSynthesis' in window)){warn();return} speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='th-TH';u.rate=.86;if(btn){btn.classList.add('active');u.onend=()=>btn.classList.remove('active');u.onerror=()=>btn.classList.remove('active')}speechSynthesis.speak(u)}
+let ttsQueueTimer=null;
+let ttsActiveBtn=null;
+let ttsQueueToken=0;
+let ttsQueueState='idle';
+let ttsQueueLines=[];
+let ttsQueueIndex=0;
+let ttsQueuePauseMs=600;
+let ttsQueueBtn=null;
+
+function resetQueueButton(){
+  if(ttsQueueBtn){
+    ttsQueueBtn.classList.remove('active');
+    ttsQueueBtn.classList.remove('playing');
+    ttsQueueBtn.textContent='🔊';
+    ttsQueueBtn.title='播放全文';
+  }
+}
+
+function stopSpeech(){
+  ttsQueueToken++;
+  if(ttsQueueTimer){clearTimeout(ttsQueueTimer);ttsQueueTimer=null;}
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  if(ttsActiveBtn){
+    ttsActiveBtn.classList.remove('active');
+    ttsActiveBtn.classList.remove('playing');
+    ttsActiveBtn=null;
+  }
+  resetQueueButton();
+  ttsQueueState='idle';
+  ttsQueueLines=[];
+  ttsQueueIndex=0;
+  ttsQueueBtn=null;
+}
+
+function speak(text,btn){
+  if(!('speechSynthesis' in window)){warn();return}
+  stopSpeech();
+  const singleToken=ttsQueueToken;
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='th-TH';
+  u.rate=.86;
+  if(btn){
+    ttsActiveBtn=btn;
+    btn.classList.add('active');
+    btn.classList.add('playing');
+    u.onend=()=>{
+      if(singleToken!==ttsQueueToken)return;
+      btn.classList.remove('active');
+      btn.classList.remove('playing');
+      if(ttsActiveBtn===btn)ttsActiveBtn=null;
+    };
+    u.onerror=()=>{
+      if(singleToken!==ttsQueueToken)return;
+      btn.classList.remove('active');
+      btn.classList.remove('playing');
+      if(ttsActiveBtn===btn)ttsActiveBtn=null;
+    };
+  }
+  speechSynthesis.speak(u);
+}
+
+function speakQueue(lines,btn,pauseMs=600){
+  if(!('speechSynthesis' in window)){warn();return}
+
+  if(btn && btn===ttsQueueBtn && ttsQueueState==='playing'){
+    ttsQueueState='paused';
+    if(ttsQueueTimer){clearTimeout(ttsQueueTimer);ttsQueueTimer=null;}
+    speechSynthesis.pause();
+    btn.textContent='▶️';
+    btn.title='繼續播放';
+    return;
+  }
+
+  if(btn && btn===ttsQueueBtn && ttsQueueState==='paused'){
+    ttsQueueState='playing';
+    btn.textContent='⏸️';
+    btn.title='暫停全文';
+    if(speechSynthesis.paused){
+      speechSynthesis.resume();
+    }
+    if(!speechSynthesis.speaking && ttsQueueIndex<ttsQueueLines.length){
+      const token=ttsQueueToken;
+      ttsQueueTimer=setTimeout(()=>nextQueueLine(token),ttsQueuePauseMs);
+    }
+    return;
+  }
+
+  stopSpeech();
+
+  ttsQueueToken++;
+  const token=ttsQueueToken;
+  ttsQueueLines=(lines||[]).map(x=>String(x||'').trim()).filter(Boolean);
+  if(!ttsQueueLines.length)return;
+
+  ttsQueueIndex=0;
+  ttsQueuePauseMs=pauseMs;
+  ttsQueueBtn=btn||null;
+  ttsQueueState='playing';
+
+  if(btn){
+    ttsActiveBtn=btn;
+    btn.classList.add('active');
+    btn.classList.add('playing');
+    btn.textContent='⏸️';
+    btn.title='暫停全文';
+  }
+
+  nextQueueLine(token);
+}
+
+function nextQueueLine(token){
+  if(token!==ttsQueueToken)return;
+  if(ttsQueueState!=='playing')return;
+
+  if(ttsQueueIndex>=ttsQueueLines.length){
+    stopSpeech();
+    return;
+  }
+
+  const line=ttsQueueLines[ttsQueueIndex];
+  ttsQueueIndex++;
+
+  const u=new SpeechSynthesisUtterance(line);
+  u.lang='th-TH';
+  u.rate=.86;
+
+  u.onend=()=>{
+    if(token!==ttsQueueToken)return;
+    if(ttsQueueState==='playing'){
+      ttsQueueTimer=setTimeout(()=>nextQueueLine(token),ttsQueuePauseMs);
+    }
+  };
+
+  u.onerror=()=>{
+    if(token!==ttsQueueToken)return;
+    if(ttsQueueState==='playing'){
+      ttsQueueTimer=setTimeout(()=>nextQueueLine(token),ttsQueuePauseMs);
+    }
+  };
+
+  speechSynthesis.speak(u);
+}
+
 function warn(){const w=document.getElementById('tts-warning');w.style.display='block';setTimeout(()=>w.style.display='none',3000)}
 function entryCard(e){return `<div class="journal-card"><div class="journal-head"><div><div class="date">${esc(e.date)}</div><div class="journal-title">${esc(e.title)}</div><div class="meta">${e.sentences.length} sentences｜${e.key_sentences.length} key sentences</div><div class="tag-row">${e.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}${e.mood.map(t=>`<span class="tag mood">${esc(t)}</span>`).join('')}</div></div><div class="actions"><button class="round" title="播放全文" onclick="playEntry('${e.id}',this)">🔊</button><button class="round" title="編輯 JSON" onclick="openEditModal('${e.id}')">✏️</button><button class="round" title="刪除" onclick="deleteEntry('${e.id}')">✕</button></div></div>${sentenceList(e.sentences,e.id)}${e.notes?`<div class="section-title">Notes</div><div class="note-box">${esc(e.notes)}</div>`:''}</div>`}
 function sentenceVocabHtml(s){
@@ -143,7 +285,7 @@ function renderFavs(){let items=[];data.entries.forEach(e=>e.sentences.concat(e.
 function renderReview(){const all=allReviewItems();const due=all.filter(x=>isDue(x.item));document.getElementById('stats-row').innerHTML=`<div class="stat"><div class="num">${due.length}</div><div class="lbl">今日待複習</div></div><div class="stat"><div class="num">${all.filter(x=>x.item.last_review===today()).length}</div><div class="lbl">今日已複習</div></div><div class="stat"><div class="num">${all.length}</div><div class="lbl">複習句總數</div></div>`;const el=document.getElementById('review-list');if(!due.length){el.innerHTML='<div class="empty"><div class="big">✅</div>今天沒有待複習的 Vlog 句子</div>';return}el.innerHTML=due.map(({entry,item})=>`<div class="review-item" id="rev-${item.id}"><div class="date">${esc(entry.date)}｜${esc(entry.title)}</div>${sentenceList([item],entry.id)}<div class="rating-row"><button class="rating-btn r0" onclick="rateItem('${entry.id}','${item.id}',0)">😰 忘了</button><button class="rating-btn r1" onclick="rateItem('${entry.id}','${item.id}',1)">🤔 模糊</button><button class="rating-btn r2" onclick="rateItem('${entry.id}','${item.id}',2)">😊 記得</button><button class="rating-btn r3" onclick="rateItem('${entry.id}','${item.id}',3)">⭐ 很熟</button></div></div>`).join('')}
 function rateItem(eid,sid,r){const e=data.entries.find(x=>x.id===eid);if(!e)return;const s=e.sentences.concat(e.key_sentences).find(x=>x.id===sid);if(!s)return;sm2(s,r);save();renderReview()}
 function toggleSentFav(eid,sid){const e=data.entries.find(x=>x.id===eid);if(!e)return;const s=e.sentences.concat(e.key_sentences).find(x=>x.id===sid);if(!s)return;s.favorite=!s.favorite;s.favorite_updated_at=new Date().toISOString();save();renderJournal();renderKeys();renderFavs()}
-function playEntry(eid,btn){const e=data.entries.find(x=>x.id===eid);if(!e)return;speak(e.sentences.map(s=>s.thai).join('。'),btn)}
+function playEntry(eid,btn){const e=data.entries.find(x=>x.id===eid);if(!e)return;const lines=e.sentences.map(s=>s.thai);speakQueue(lines,btn,600)}
 function deleteEntry(eid){if(!confirm('確定刪除這篇 Vlog？'))return;data.entries=data.entries.filter(e=>e.id!==eid);save();renderJournal()}
 function addVlogFromForm(){let raw=document.getElementById('f-json').value.trim();let e;if(raw){try{e=JSON.parse(raw)}catch(err){alert('JSON 格式錯誤');return}}else{e={date:document.getElementById('f-date').value||today(),title:document.getElementById('f-title').value||'Untitled Vlog',mood:document.getElementById('f-mood').value,tags:document.getElementById('f-tags').value,sentences:[]}}; e.date=e.date||document.getElementById('f-date').value||today();e.title=e.title||document.getElementById('f-title').value||'Untitled Vlog';if(!e.mood)e.mood=document.getElementById('f-mood').value;if(!e.tags)e.tags=document.getElementById('f-tags').value;data.entries.unshift(normEntry(e));save();document.getElementById('f-json').value='';renderJournal()}
 function openPasteModal(){document.getElementById('paste-modal').style.display='flex';setTimeout(()=>document.getElementById('paste-input').focus(),50)}function closePasteModal(){document.getElementById('paste-modal').style.display='none';document.getElementById('paste-input').value='';document.getElementById('paste-error').style.display='none'}
@@ -203,6 +345,7 @@ function mergeSentenceList(localList, incomingList){
 
       mergeFavoriteState(local,s);
     }else{
+      if(s.favorite_updated_at===undefined)s.favorite_updated_at=null;
       localList.push(s);
       index.set(s.id,s);
     }
