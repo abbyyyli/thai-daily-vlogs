@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Food OS· 個人食材資料庫</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF5EC; --card:#FFFCF6; --ink:#1f2937; --muted:#8D8175;
+  --line:#EADFCF; --sage:#7E9072; --sage-soft:#E5ECDD; --clay:#C9785B;
+  --sand:#E9C996; --good:#7E9072; --warn:#D9B777;
+  --shadow:0 14px 40px -22px rgba(80,60,40,.45);
+  --r:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:"Noto Sans TC",sans-serif;background:var(--bg);color:var(--ink);
+  line-height:1.6;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(circle at 12% -5%,#fff5e3 0,transparent 45%),radial-gradient(circle at 90% 0,#eef1e4 0,transparent 40%);
+  min-height:100vh;
+}
+.wrap{max-width:880px;margin:0 auto;padding:26px 18px 76px}
+header{margin-bottom:18px}
+.kicker{font-family:"Fraunces",serif;letter-spacing:.5px;color:var(--clay);font-size:.78rem;text-transform:uppercase}
+h1{font-family:"Noto Serif TC",serif;font-weight:700;font-size:1.75rem;letter-spacing:.5px;margin-top:2px}
+.sub{color:var(--muted);font-size:.9rem;margin-top:4px}
+nav{display:flex;gap:6px;margin:20px 0 18px;background:var(--card);padding:6px;border-radius:14px;border:1px solid var(--line);overflow-x:auto;position:sticky;top:0;z-index:10}
+nav button{flex:1;min-width:92px;border:none;background:transparent;font-family:inherit;font-size:.86rem;color:var(--muted);padding:9px 6px;border-radius:10px;cursor:pointer;white-space:nowrap;transition:.2s;font-weight:500}
+nav button.on{background:var(--sage);color:#fff;box-shadow:0 6px 14px -8px var(--sage)}
+.panel{display:none;animation:fade .28s ease}.panel.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card h2{font-family:"Noto Serif TC",serif;font-size:1.06rem;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.hint{color:var(--muted);font-size:.82rem;margin-bottom:14px}
+label{display:block;font-size:.82rem;color:var(--muted);margin:12px 0 5px}
+input[type=text],input[type=number],textarea,select{
+  width:100%;font-family:inherit;font-size:.92rem;color:var(--ink);
+  background:#fff;border:1px solid var(--line);border-radius:11px;padding:10px 12px;resize:vertical
+}
+textarea{min-height:88px}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--sage)}
+.row{display:flex;gap:8px;align-items:center}.row input{flex:1}
+.btn{background:var(--sage);color:#fff;border:none;border-radius:11px;padding:10px 14px;font-family:inherit;font-weight:500;cursor:pointer;font-size:.9rem}
+.btn.secondary{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn.clay{background:var(--clay)}
+.btn:hover{filter:brightness(1.04)}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media(max-width:640px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.row{flex-direction:column;align-items:stretch}.btn{width:100%}}
+.datebar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.datebar button{border:1px solid var(--line);background:#fff;border-radius:10px;width:38px;height:38px;cursor:pointer;font-size:1rem;color:var(--ink)}
+.datebar .d{font-family:"Fraunces",serif;font-size:1.05rem;font-weight:500;text-align:center;flex:1}
+.hero{background:linear-gradient(135deg,#fffaf1,#eef5e8);border:1px solid var(--line);border-radius:22px;padding:18px;margin-bottom:16px;box-shadow:var(--shadow)}
+.heroTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}
+.heroTitle{font-family:"Noto Serif TC",serif;font-size:1.12rem;font-weight:700}
+.heroSub{font-size:.8rem;color:var(--muted);margin-top:2px}
+.badge{background:var(--sage);color:#fff;border-radius:999px;padding:5px 10px;font-size:.72rem;white-space:nowrap}
+.metric{background:#fff;border:1px solid var(--line);border-radius:15px;padding:12px}
+.metric .num{font-family:"Fraunces",serif;font-size:1.25rem;color:var(--sage);line-height:1.12}
+.metric .goal{font-size:.72rem;color:var(--muted);margin-top:1px}
+.metric .lab{font-size:.76rem;color:#5c5146;margin-top:5px;font-weight:700}
+.bar{height:6px;background:#eee5d8;border-radius:999px;overflow:hidden;margin-top:8px}
+.bar span{display:block;height:100%;background:var(--sage);border-radius:999px;max-width:100%}
+.coachgrid{display:grid;grid-template-columns:1.1fr .9fr;gap:10px;margin-top:10px}
+.coachpanel{background:#fff;border:1px solid var(--line);border-radius:15px;padding:13px}
+.coachpanel h3{font-size:.9rem;margin-bottom:8px;font-family:"Noto Serif TC",serif;color:var(--clay)}
+.defline{display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding:5px 0;font-size:.84rem}
+.defline:last-child{border-bottom:none}
+.suggestions{display:flex;flex-wrap:wrap;gap:7px}
+.suggestion{background:var(--sage-soft);border:1px solid #d8e2cb;border-radius:999px;padding:6px 10px;font-size:.78rem;color:#4d5942}
+.group{border:1px solid var(--line);background:#fff;border-radius:14px;margin-bottom:10px;overflow:hidden}
+.grouphead{width:100%;border:none;background:#fff;padding:13px 14px;text-align:left;cursor:pointer;display:flex;justify-content:space-between;gap:10px;color:var(--ink)}
+.grouphead b{font-size:.94rem}.grouphead small{display:block;color:var(--muted);font-size:.74rem;margin-top:2px}
+.groupbody{display:none;border-top:1px solid var(--line);padding:12px;background:#fffdf9}
+.group.open .groupbody{display:block}
+.itemgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media(max-width:520px){.itemgrid{grid-template-columns:1fr}}
+.itemcard,.itembtn{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 11px;text-align:left;color:var(--ink);font-family:inherit}
+.itembtn{cursor:pointer}.itembtn:hover{border-color:var(--sage);background:#f8fbf3}
+.itemcard .n,.itembtn .n{font-weight:700;font-size:.88rem}
+.itemcard .m,.itembtn .m{font-size:.72rem;color:var(--muted);margin-top:2px}
+.entryRow{display:grid;grid-template-columns:1fr 90px 90px auto;gap:8px;align-items:end}
+@media(max-width:640px){.entryRow{grid-template-columns:1fr}}
+ul.list{list-style:none;margin-top:8px}
+ul.list li{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;background:#fff;border:1px solid var(--line);border-radius:11px;padding:9px 13px;margin-bottom:7px;font-size:.9rem}
+.x{color:var(--muted);cursor:pointer;border:none;background:none;font-size:1rem}
+.meta{display:block;font-size:.75rem;color:var(--muted);margin-top:2px}
+.jsonbox{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;margin:12px 0}
+.jsonbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.jsonbar button{border:1px solid var(--line);background:#fff;border-radius:11px;padding:9px 13px;font-family:inherit;cursor:pointer;color:var(--ink)}
+.jsonbar button.primary{background:var(--sage);color:#fff;border-color:var(--sage)}
+.jsonmsg{font-size:.78rem;color:var(--muted);margin-top:8px;min-height:1.2em}
+.note{background:#fdf3ea;border:1px dashed var(--sand);border-radius:12px;padding:12px 14px;font-size:.82rem;color:#7a6a52;margin-top:8px}
+.saved{font-size:.76rem;color:var(--sage);opacity:0;transition:.3s;margin-left:8px}.saved.show{opacity:1}
+footer{text-align:center;color:var(--muted);font-size:.74rem;margin-top:24px;line-height:1.7}
+
+.quickGroupBody .entryRow{margin:8px 0 10px}
+.quickGroupTitle{font-weight:700;color:var(--clay);font-size:.9rem}
+.comboTag{display:inline-block;background:var(--sage-soft);border-radius:999px;padding:2px 8px;font-size:.7rem;color:#526044;margin-top:4px}
+
+
+/* 分類快速加入：分類卡兩兩並排，展開內容維持卡片內直排 */
+#quickAddGroups{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+#quickAddGroups .group{
+  margin-bottom:0;
+  border-radius:18px;
+  box-shadow:0 10px 28px -24px rgba(80,60,40,.55);
+  overflow:hidden;
+}
+#quickAddGroups .grouphead{
+  min-height:74px;
+  padding:16px 16px;
+  align-items:center;
+  background:linear-gradient(135deg,#fffdf9,#f8fbf3);
+}
+#quickAddGroups .grouphead b{
+  font-size:1rem;
+}
+#quickAddGroups .grouphead small{
+  font-size:.76rem;
+  margin-top:3px;
+}
+#quickAddGroups .groupbody{
+  padding:12px;
+}
+#quickAddGroups .itemgrid{
+  grid-template-columns:1fr;
+}
+#quickAddGroups .itembtn{
+  border-radius:14px;
+  padding:12px 13px;
+}
+@media(max-width:640px){
+  #quickAddGroups{grid-template-columns:1fr}
+}
+
+
+/* Food OS v1.5：常用收藏 + 分類快速加入份量選擇 */
+.starbtn{
+  border:1px solid var(--line);
+  background:#fffaf2;
+  color:var(--muted);
+  border-radius:999px;
+  padding:5px 9px;
+  font-size:.78rem;
+  cursor:pointer;
+  font-family:inherit;
+  white-space:nowrap;
+}
+.starbtn.on{
+  background:var(--sage-soft);
+  border-color:#d8e2cb;
+  color:#4d5942;
+}
+.itemcard .topline{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:8px;
+}
+.quickControls{
+  display:grid;
+  grid-template-columns:1fr 92px auto;
+  gap:7px;
+  margin-top:10px;
+  align-items:center;
+}
+.quickControls input,.quickControls select{
+  border:1px solid var(--line);
+  background:#fffdf9;
+  border-radius:12px;
+  padding:9px 10px;
+  font-size:.84rem;
+}
+.quickControls button{
+  border:none;
+  background:var(--sage);
+  color:#fff;
+  border-radius:12px;
+  padding:9px 12px;
+  font-family:inherit;
+  font-size:.82rem;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.favline{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin:10px 0 0;
+  font-size:.84rem;
+  color:var(--muted);
+}
+.favline input{width:auto}
+@media(max-width:520px){
+  .quickControls{grid-template-columns:1fr}
+}
+
+
+/* Food OS v1.6.1：常用份量設定 */
+.servingEditor{
+  display:grid;
+  grid-template-columns:1fr 92px auto;
+  gap:7px;
+  margin-top:10px;
+  align-items:center;
+}
+.servingEditor input,.servingEditor select{
+  border:1px solid var(--line);
+  background:#fffdf9;
+  border-radius:12px;
+  padding:9px 10px;
+  font-size:.84rem;
+}
+.servingEditor button{
+  border:1px solid var(--line);
+  background:#fff;
+  color:var(--ink);
+  border-radius:12px;
+  padding:9px 12px;
+  font-family:inherit;
+  font-size:.82rem;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.servingEditor button:hover{border-color:var(--sage);color:var(--sage)}
+.servingSaved{
+  color:var(--sage);
+  font-size:.72rem;
+  margin-top:5px;
+  min-height:1em;
+}
+@media(max-width:520px){
+  .servingEditor{grid-template-columns:1fr}
+}
+
+
+/* Food OS v1.6.1.1：分類快速加入操作穩定版 */
+.quickItem{
+  position:relative;
+}
+.quickItem .topline{
+  align-items:flex-start;
+}
+.quickControls{
+  grid-template-columns:minmax(72px,1fr) 92px 72px;
+}
+.quickControls input,
+.quickControls select,
+.quickControls button{
+  min-height:40px;
+}
+.quickMsg{
+  margin-top:7px;
+  min-height:1em;
+  font-size:.74rem;
+  color:var(--sage);
+}
+.quickAddFlash{
+  animation:quickFlash .45s ease;
+}
+@keyframes quickFlash{
+  from{box-shadow:0 0 0 3px rgba(126,144,114,.18)}
+  to{box-shadow:none}
+}
+@media(max-width:420px){
+  .quickControls{
+    grid-template-columns:1fr 1fr;
+  }
+  .quickControls button{
+    grid-column:1 / -1;
+  }
+}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="kicker">personal fitness os</div>
+  <h1>Food OS</h1>
+  <div class="sub">個人食材資料庫 + 每日飲食紀錄 + 常用收藏 + 常用份量 + 檔案備份。</div>
+</header>
+
+<nav>
+  <button class="on" data-tab="dash">Dashboard</button>
+  <button data-tab="log">今日紀錄</button>
+  <button data-tab="db">食材資料庫</button>
+  <button data-tab="add">新增食材</button>
+  <button data-tab="history">History</button>
+  <button data-tab="guide">Guide & Prompts</button>
+  <button data-tab="settings">設定</button>
+</nav>
+
+<section class="panel on" id="dash">
+  <div class="datebar">
+    <button id="prev">‹</button>
+    <div class="d" id="dlabel">—</div>
+    <button id="next">›</button>
+  </div>
+
+  <div class="hero">
+    <div class="heroTop">
+      <div>
+        <div class="heroTitle">今日營養 Dashboard</div>
+        <div class="heroSub">食材資料庫會依 gram / ml / qty 自動換算今日總量。</div>
+      </div>
+      <div class="badge">v16</div>
+    </div>
+    <div class="grid4" id="metricGrid"></div>
+    <div class="coachpanel" style="margin-top:10px">
+      <h3>今天還差什麼</h3>
+      <div id="deficits"></div>
+      <div class="note">此頁只顯示數字缺口。要吃什麼可以把今日紀錄截圖或貼給 AI，請它根據缺口幫你調整。</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>今日已記錄</h2>
+    <ul class="list" id="dashList"></ul>
+  </div>
+</section>
+
+<section class="panel" id="log">
+  <div class="datebar">
+    <button class="prevMirror">‹</button>
+    <div class="d dateMirror">—</div>
+    <button class="nextMirror">›</button>
+  </div>
+
+  <div class="card">
+    <h2>快速加入食物</h2>
+    <div class="hint">從完整食材庫選食材，輸入吃了幾 g / ml / 顆。優格組保留為 Combo。</div>
+    <div class="entryRow">
+      <select id="foodSelect"></select>
+      <input id="amountInput" type="number" min="0" step="1" placeholder="份量">
+      <select id="unitSelect"><option value="gram">g</option><option value="ml">ml</option><option value="qty">顆/份</option></select>
+      <button class="btn" id="addLog">加入</button>
+    </div>
+    <div class="note" id="servingHint"></div>
+  </div>
+
+  <div class="card">
+    <h2>分類快速加入</h2>
+    <div class="hint">同一個食材庫，依分類展開；每個食材都直接顯示成按鈕，避免下拉漏資料。</div>
+    <div id="quickAddGroups"></div>
+  </div>
+
+  <div class="card">
+    <h2>JSON 匯入</h2>
+    <div class="hint">把 AI 輸出的 Daily Food Log JSON 貼在下方。資料庫食物用 <code>food</code>；偶爾吃的外食、新食物、聚餐用 <code>custom</code>。</div>
+    <details class="note">
+      <summary style="cursor:pointer;font-weight:700;color:var(--clay)">Daily Food Parser Prompt（短版）</summary>
+      <textarea rows="9" readonly style="margin-top:8px">請將以下飲食內容轉換成 Food OS 可匯入的 Daily Food Log JSON。
+
+規則：
+1. 使用 json code block 包裝輸出。
+2. 不要在 code block 外加入任何文字。
+3. JSON 必須合法可解析。
+4. 輸出格式必須是 {"date":"YYYY-MM-DD","food":[]}。
+3. 已存在於 Food Database 的食物用 food。
+4. 不在資料庫或偶爾吃的外食用 custom。
+5. custom 必須包含 nutrition。
+6. 固體用 gram，液體用 ml，雞蛋等天然單位用 qty。
+7. 若為估算，加入 "estimated": true。</textarea>
+    </details>
+    <details class="note">
+      <summary style="cursor:pointer;font-weight:700;color:var(--clay)">查看 JSON 範例</summary>
+      <div style="margin-top:8px">
+        <code>{"date":"2026-06-06","food":[{"food":"雞里肌","gram":250},{"food":"無糖豆漿","ml":300},{"food":"大雞蛋","qty":2},{"custom":"外食雞肉便當估算","estimated":true,"nutrition":{"calories":520,"protein":32,"carbs":60,"fat":16}}]}</code>
+      </div>
+    </details>
+    <div class="jsonbox">
+      <label style="margin-top:0">貼上每日飲食 JSON</label>
+      <textarea id="logJson" placeholder='{
+  "date":"2026-06-06",
+  "food":[
+    {"food":"雞里肌","gram":250},
+    {"food":"無糖豆漿","ml":300},
+    {"food":"大雞蛋","qty":2},
+    {"food":"優格組","qty":1},
+    {"custom":"外食雞肉便當估算","estimated":true,"nutrition":{"calories":520,"protein":32,"carbs":60,"fat":16}}
+  ]
+}'></textarea>
+      <div class="jsonbar">
+        <button class="primary" id="importLogJson">選擇檔案匯入</button>
+        <button id="importLogJsonText">貼上內容匯入</button>
+        <button id="exportLogJson">匯出今日檔案</button>
+        <button id="exportAllJson">匯出全部備份檔</button>
+        <button id="clearLogJson">清空</button>
+      </div>
+      <div class="jsonmsg" id="logMsg"></div>
+    </div>
+    <div class="note">
+      使用原則：常吃食物才新增到食材資料庫；偶爾吃的外食、零食、便利商店食物，可直接用 custom JSON 記錄營養素，不需要建檔。
+    </div>
+    <ul class="list" id="logList"></ul>
+  </div>
+</section>
+
+<section class="panel" id="db">
+  <div class="card">
+    <h2>食材資料庫</h2>
+    <div class="hint">大部分以每 100g / 100ml 建檔；雞蛋等天然單位可用 qty；category 可擴展，例如 drink / snack / supplement / sauce。</div>
+    <div id="dbList"></div>
+  </div>
+</section>
+
+<section class="panel" id="add">
+  <div class="card">
+    <h2>新增 Combo 組合</h2>
+    <div class="hint">適合「常吃、份量固定」的組合，例如優格組、早餐組。偶爾吃的外食仍建議用 custom，不用建 Combo。</div>
+    <label>貼上 Combo JSON</label>
+    <textarea id="comboJson" placeholder='{
+  "name":"早餐組",
+  "type":"combo",
+  "items":[
+    {"food":"大雞蛋","qty":2},
+    {"food":"無糖豆漿","ml":300},
+    {"food":"香蕉","gram":120}
+  ]
+}'></textarea>
+    <div class="jsonbar">
+      <button class="primary" id="importCombo">新增 / 更新 Combo</button>
+      <button id="exportCombos">匯出 Combo 檔案</button>
+      <button id="clearComboJson">清空</button>
+    </div>
+    <div class="jsonmsg" id="comboMsg"></div>
+    <div class="note">Combo 內的 items 可使用 food/gram/ml/qty，也可以引用已存在的食材。不建議在 Combo 裡放 custom 臨時食物。</div>
+  </div>
+
+  <div class="card">
+    <h2>新增食材</h2>
+    <div class="hint">你可以把營養標示丟給 AI，請它轉成 Food DB JSON，再貼進這裡匯入。</div>
+    <label>貼上 Food DB JSON</label>
+    <textarea id="foodDbJson" placeholder='{
+  "name":"新食材",
+  "category":"protein",
+  "unit":"100g",
+  "nutrition":{"calories":100,"protein":20,"carbs":0,"fat":2}
+}'></textarea>
+    <label class="favline">
+      <input type="checkbox" id="addFoodToFavorite" checked>
+      新增 / 更新後加入常用 ⭐
+    </label>
+    <div class="jsonbar">
+      <button class="primary" id="importFoodDb">新增到資料庫</button>
+      <button id="exportFoodDb">匯出食材資料庫檔案</button>
+      <button id="clearFoodDbJson">清空</button>
+    </div>
+    <div class="jsonmsg" id="foodDbMsg"></div>
+    <div class="note">支援單筆 object 或多筆 array。若名稱重複，會覆蓋舊資料。</div>
+  </div>
+</section>
+
+
+
+
+<section class="panel" id="history">
+  <div class="card">
+    <h2>📅 History｜歷史紀錄</h2>
+    <div class="hint">所有有紀錄的日期會列在這裡。點日期可切換到該日 Dashboard。</div>
+    <div id="historyList"></div>
+  </div>
+
+  <div class="card">
+    <h2>🧾 全部資料備份</h2>
+    <div class="hint">建議每週或每次大改前匯出一次，避免 localStorage 損壞或換裝置造成資料遺失。</div>
+    <div class="jsonbar">
+      <button class="primary" id="exportAllJsonHistory">匯出全部備份檔</button>
+      <button id="importAllJsonHistory">匯入全部備份檔</button>
+    </div>
+  </div>
+</section>
+
+
+
+<section class="panel" id="guide">
+  <div class="card">
+    <h2>✏️ Guide & Prompts｜可編輯設定</h2>
+    <div class="hint">這裡的內容會儲存在 Food OS 裡，並跟全部備份一起匯出。若改壞了，可以單段重置或一鍵重置全部預設。</div>
+    <div class="jsonbar">
+      <button class="primary" id="saveAllPrompts">儲存全部 Prompt</button>
+      <button id="resetAllPrompts">重置全部預設</button>
+    </div>
+    <div class="jsonmsg" id="promptGlobalMsg"></div>
+  </div>
+
+  <div class="card prompt-card">
+    <h2>📖 Project Intro｜專案介紹</h2>
+    <div class="hint">未來開新對話時，可以先貼這段，讓 AI 知道 Food OS 的定位、資料結構與 prompt 用法。</div>
+    <textarea id="prompt_projectIntro" rows="19" data-prompt-key="projectIntro">Personal Fitness OS / Food OS 專案說明：
+
+這是一套個人飲食與訓練管理系統。Food OS 的目標不是追求完美紀錄，而是建立可長期使用的個人食材資料庫、每日飲食紀錄與備份流程。
+
+核心架構：
+1. Food Database：常吃食物建立資料庫，營養資料以每 100g / 100ml / unit 為基準。
+2. Serving Database：份量換算由系統處理，不需要在 prompt 裡重複定義。
+3. Combo Database：常吃且固定份量的餐點組合，例如優格組。
+4. Daily Logs：每日飲食紀錄使用 date 儲存，格式為 {&quot;date&quot;:&quot;YYYY-MM-DD&quot;,&quot;food&quot;:[]}。
+5. Custom Foods：外食、新食物、聚餐不需建檔，使用 custom + nutrition 記錄。
+6. Backup System：支援匯出今日與匯出全部資料，避免 localStorage 資料遺失。
+7. Favorites：常用食材會跟著備份匯出，可在食材庫用 ⭐ 收藏 / 取消收藏。
+8. Default Servings：常用份量由系統內的 servings 管理，分類快速加入會自動套用常用份量。
+
+AI 使用方式：
+A. 今天吃了什麼 → 使用「🍱 Daily Food Parser」輸出 Daily Log JSON。
+B. 常吃的新食物 → 使用「➕ Food Database Generator」建立 Food Database JSON。
+C. 固定早餐 / 優格組 / 訓練前餐 → 使用「🌟 Combo Generator」建立 Combo JSON。
+
+建立原則：
+- 常吃超過 3 次 → 建立 Food Database。
+- 固定且常吃 → 建立 Combo。
+- 偶爾吃、外食、聚餐 → 使用 custom。
+- 不要把所有食物都建立 Food Database；資料庫只保留真正會反覆出現的食物。</textarea>
+    <div class="jsonbar">
+      <button class="primary" data-save-prompt="projectIntro">儲存這段</button>
+      <button data-copy-prompt="projectIntro">複製</button>
+      <button data-reset-prompt="projectIntro">重置預設</button>
+    </div>
+    <div class="jsonmsg" data-prompt-msg="projectIntro"></div>
+  </div>
+
+  <div class="card prompt-card">
+    <h2>🧱 JSON Robustness Rules</h2>
+    <div class="hint">所有 prompt 都共用這些規則，避免 AI 輸出壞掉。</div>
+    <textarea id="prompt_globalRules" rows="13" data-prompt-key="globalRules">所有輸出都必須遵守：
+
+1. 使用 json code block 包裝輸出。
+2. 不要在 code block 外加入任何文字。
+3. 不要輸出解釋。
+4. code block 內必須是合法 JSON。
+5. JSON key 和 string value 必須使用雙引號。
+6. 不要使用註解。
+7. 不要使用 trailing comma。
+8. 數值必須是 number，不要把單位寫進數值。
+9. 若需要估算，請在該 item 加上 &quot;estimated&quot;: true。
+10. Daily Food Log 使用 {&quot;date&quot;:&quot;YYYY-MM-DD&quot;,&quot;food&quot;:[]}。
+11. Food Database JSON 只描述食材本身；是否加入常用、常用份量可在 Food OS 內設定。
+12. favorites、usageStats、servings 是系統備份資料，不是每日飲食 JSON 必填欄位。
+13. 輸出必須可直接貼進 Food OS。
+14. 只有當使用者明確要求「純 JSON / 不要 markdown」時，才輸出裸 JSON。</textarea>
+    <div class="jsonbar">
+      <button class="primary" data-save-prompt="globalRules">儲存這段</button>
+      <button data-copy-prompt="globalRules">複製</button>
+      <button data-reset-prompt="globalRules">重置預設</button>
+    </div>
+    <div class="jsonmsg" data-prompt-msg="globalRules"></div>
+  </div>
+
+  <div class="card prompt-card">
+    <h2>🍱 Daily Food Parser｜每日飲食轉 JSON</h2>
+    <div class="hint">每天最常用。整天飲食、臨時多吃一樣、外食估算，都用這個 prompt。</div>
+    <textarea id="prompt_dailyFoodParser" rows="20" data-prompt-key="dailyFoodParser">你是 Personal Fitness OS 的 Food Parser。
+
+請將我輸入的飲食內容轉換成 Food OS 可匯入的 Daily Food Log JSON。
+
+輸出規則：
+1. 使用 json code block 包裝輸出。
+2. 不要在 code block 外加入任何文字。
+3. 不要輸出解釋。
+4. code block 內必須是合法 JSON。
+5. 輸出格式必須是 {&quot;date&quot;:&quot;YYYY-MM-DD&quot;,&quot;food&quot;:[]}。
+6. 若我沒有提供日期，date 使用今天日期。
+7. 已存在於 Food Database 的食物，使用 food。
+8. 不存在於 Food Database 的食物，使用 custom。
+9. custom 必須包含 nutrition。
+10. 固體使用 gram；液體使用 ml；雞蛋等天然單位食物可使用 qty。
+11. 若份量不明，請用合理估算並加上 &quot;estimated&quot;: true。
+12. 若無法估算，請不要亂填，改用 custom 並在名稱中標註「估算不足」。
+13. 常用食材仍然只用 food，不要因為是常用就改格式。
+14. favorites、usageStats、servings 不屬於 Daily Food Log，請不要放進每日飲食 JSON。
+
+Food Database 常見名稱：
+雞里肌、雞胸肉、大雞蛋、蝦仁、無糖豆漿、蛋白粉、Kirkland希臘優格、質立希臘式優格、白飯、燕麥、香蕉、藍莓、高麗菜、地瓜、板豆腐、嫩豆腐、鮭魚、鯛魚、優格組。
+
+輸出格式範例：
+```json
+{
+  &quot;date&quot;:&quot;2026-06-06&quot;,
+  &quot;food&quot;:[
+    {&quot;food&quot;:&quot;雞里肌&quot;,&quot;gram&quot;:250},
+    {&quot;food&quot;:&quot;無糖豆漿&quot;,&quot;ml&quot;:300},
+    {&quot;food&quot;:&quot;大雞蛋&quot;,&quot;qty&quot;:2},
+    {&quot;food&quot;:&quot;優格組&quot;,&quot;qty&quot;:1},
+    {&quot;custom&quot;:&quot;外食雞肉便當估算&quot;,&quot;estimated&quot;:true,&quot;nutrition&quot;:{&quot;calories&quot;:520,&quot;protein&quot;:32,&quot;carbs&quot;:60,&quot;fat&quot;:16}}
+  ]
+}
+```</textarea>
+    <div class="jsonbar">
+      <button class="primary" data-save-prompt="dailyFoodParser">儲存這段</button>
+      <button data-copy-prompt="dailyFoodParser">複製</button>
+      <button data-reset-prompt="dailyFoodParser">重置預設</button>
+    </div>
+    <div class="jsonmsg" data-prompt-msg="dailyFoodParser"></div>
+  </div>
+
+  <div class="card prompt-card">
+    <h2>➕ Food Database Generator｜新增食材</h2>
+    <div class="hint">新食物常吃超過 3 次，再用這個轉成資料庫格式。</div>
+    <textarea id="prompt_foodDatabaseGenerator" rows="18" data-prompt-key="foodDatabaseGenerator">請將以下營養標示轉換成 Food OS 的 Food Database JSON。
+
+輸出規則：
+1. 使用 json code block 包裝輸出。
+2. 不要在 code block 外加入任何文字。
+3. 不要輸出解釋。
+4. code block 內必須是合法 JSON。
+5. 固體食物優先轉成 unit:&quot;100g&quot;。
+6. 液體優先轉成 unit:&quot;100ml&quot;。
+7. 若食物天然以單位計算，可使用 unit:&quot;1顆&quot; 或 unit:&quot;1份&quot;。
+8. nutrition 必須包含 calories, protein, carbs, fat。
+9. category 是可擴展的自由字串。
+10. 優先使用既有 category；若不適合，可建立合理的新 category。
+11. 數值使用 number，不要加單位文字。
+12. Food Database JSON 只負責食材資料，不要輸出 favorites 或 usageStats。
+13. 若知道常用份量，可加入 defaultServing，例如 {&quot;unit&quot;:&quot;gram&quot;,&quot;amount&quot;:53}；若不知道可省略，由 Food OS 內設定。
+
+建議 category：
+protein, carbs, fruit, vegetable, fat, drink, snack, dessert, supplement, sauce, other
+
+輸出格式：
+```json
+{
+  &quot;name&quot;:&quot;&quot;,
+  &quot;category&quot;:&quot;protein&quot;,
+  &quot;unit&quot;:&quot;100g&quot;,
+  &quot;nutrition&quot;:{
+    &quot;calories&quot;:0,
+    &quot;protein&quot;:0,
+    &quot;carbs&quot;:0,
+    &quot;fat&quot;:0
+  },
+  &quot;defaultServing&quot;:{&quot;unit&quot;:&quot;gram&quot;,&quot;amount&quot;:53}
+}
+```</textarea>
+    <div class="jsonbar">
+      <button class="primary" data-save-prompt="foodDatabaseGenerator">儲存這段</button>
+      <button data-copy-prompt="foodDatabaseGenerator">複製</button>
+      <button data-reset-prompt="foodDatabaseGenerator">重置預設</button>
+    </div>
+    <div class="jsonmsg" data-prompt-msg="foodDatabaseGenerator"></div>
+  </div>
+
+  <div class="card prompt-card">
+    <h2>🌟 Combo Generator｜新增 Combo</h2>
+    <div class="hint">只有固定且常吃的組合才建立 Combo。</div>
+    <textarea id="prompt_comboGenerator" rows="15" data-prompt-key="comboGenerator">請將我描述的固定餐點轉換成 Food OS 的 Combo JSON。
+
+輸出規則：
+1. 使用 json code block 包裝輸出。
+2. 不要在 code block 外加入任何文字。
+3. 不要輸出解釋。
+4. code block 內必須是合法 JSON。
+5. items 優先使用 Food Database 內已存在的標準食物名稱。
+6. 使用 gram / ml / qty。
+7. 不要在 Combo 裡放 custom 臨時食物。
+8. 若某個 item 不存在於 Food Database，請不要亂創 food 名稱，改輸出：
+   {&quot;missing_food&quot;:&quot;食物名稱&quot;,&quot;note&quot;:&quot;需要先建立 Food Database&quot;}
+
+輸出格式：
+```json
+{
+  &quot;name&quot;:&quot;早餐組&quot;,
+  &quot;type&quot;:&quot;combo&quot;,
+  &quot;items&quot;:[
+    {&quot;food&quot;:&quot;大雞蛋&quot;,&quot;qty&quot;:2},
+    {&quot;food&quot;:&quot;無糖豆漿&quot;,&quot;ml&quot;:300},
+    {&quot;food&quot;:&quot;香蕉&quot;,&quot;gram&quot;:120}
+  ]
+}
+```</textarea>
+    <div class="jsonbar">
+      <button class="primary" data-save-prompt="comboGenerator">儲存這段</button>
+      <button data-copy-prompt="comboGenerator">複製</button>
+      <button data-reset-prompt="comboGenerator">重置預設</button>
+    </div>
+    <div class="jsonmsg" data-prompt-msg="comboGenerator"></div>
+  </div>
+</section>
+
+
+<section class="panel" id="settings">
+  <div class="card">
+    <h2>設定</h2>
+    <label>每日營養目標</label>
+    <div class="grid4">
+      <input id="targetCalories" type="number" placeholder="熱量 kcal">
+      <input id="targetProtein" type="number" placeholder="蛋白質 g">
+      <input id="targetCarbs" type="number" placeholder="碳水 g">
+      <input id="targetFat" type="number" placeholder="脂肪 g">
+    </div>
+    <button class="btn" id="saveSettings" style="margin-top:10px">儲存<span class="saved" id="saved">已儲存</span></button>
+    <hr style="border:none;border-top:1px solid var(--line);margin:22px 0">
+    <button class="btn secondary" id="reset">清空全部資料</button>
+  </div>
+</section>
+
+<footer>Food OS 是個人紀錄工具，不是醫療或營養建議。營養標示與實際份量仍可能有誤差。</footer>
+</div>
+
+<script>
+const KEY="food_os_v16";
+const OLD_KEY="food_os_v1";
+const DEFAULT_FOODS=[
+  {"name":"雞里肌","category":"protein","unit":"100g","nutrition":{"calories":110,"protein":22,"carbs":0,"fat":1.5}},
+  {"name":"雞胸肉","category":"protein","unit":"100g","nutrition":{"calories":110,"protein":23,"carbs":0,"fat":1.5}},
+  {"name":"大雞蛋","category":"protein","unit":"1顆","weight":60,"nutrition":{"calories":80,"protein":7,"carbs":0.5,"fat":5.5}},
+  {"name":"蝦仁","category":"protein","unit":"100g","nutrition":{"calories":82,"protein":19.6,"carbs":0,"fat":0.5}},
+  {"name":"無糖豆漿","category":"protein","unit":"100ml","nutrition":{"calories":36,"protein":3.4,"carbs":1.6,"fat":1.8}},
+  {"name":"蛋白粉","category":"protein","unit":"100g","nutrition":{"calories":387,"protein":68.7,"carbs":16.7,"fat":8.3}},
+  {"name":"Kirkland希臘優格","category":"protein","unit":"100g","nutrition":{"calories":59,"protein":9.4,"carbs":5.3,"fat":0}},
+  {"name":"質立希臘式優格","category":"protein","unit":"100g","nutrition":{"calories":114,"protein":4,"carbs":13.2,"fat":5}},
+  {"name":"板豆腐","category":"protein","unit":"100g","nutrition":{"calories":88,"protein":8,"carbs":2,"fat":5}},
+  {"name":"嫩豆腐","category":"protein","unit":"100g","nutrition":{"calories":55,"protein":5,"carbs":2,"fat":3}},
+  {"name":"毛豆","category":"protein","unit":"100g","nutrition":{"calories":122,"protein":11,"carbs":10,"fat":5}},
+  {"name":"鮭魚","category":"protein","unit":"100g","nutrition":{"calories":208,"protein":20,"carbs":0,"fat":13}},
+  {"name":"鯛魚","category":"protein","unit":"100g","nutrition":{"calories":96,"protein":20,"carbs":0,"fat":1.7}},
+  {"name":"瘦牛肉","category":"protein","unit":"100g","nutrition":{"calories":170,"protein":21,"carbs":0,"fat":9}},
+  {"name":"豬里肌","category":"protein","unit":"100g","nutrition":{"calories":150,"protein":21,"carbs":0,"fat":6}},
+  {"name":"白飯","category":"carbs","unit":"100g","nutrition":{"calories":140,"protein":2.5,"carbs":31,"fat":0.3}},
+  {"name":"燕麥","category":"carbs","unit":"100g","nutrition":{"calories":373,"protein":13,"carbs":67,"fat":8}},
+  {"name":"地瓜","category":"carbs","unit":"100g","nutrition":{"calories":86,"protein":1.6,"carbs":20,"fat":0.1}},
+  {"name":"南瓜","category":"carbs","unit":"100g","nutrition":{"calories":26,"protein":1,"carbs":6.5,"fat":0.1}},
+  {"name":"玉米","category":"carbs","unit":"100g","nutrition":{"calories":96,"protein":3.4,"carbs":21,"fat":1.5}},
+  {"name":"糙米飯","category":"carbs","unit":"100g","nutrition":{"calories":111,"protein":2.6,"carbs":23,"fat":0.9}},
+  {"name":"香蕉","category":"fruit","unit":"100g","nutrition":{"calories":89,"protein":1.1,"carbs":23,"fat":0.3}},
+  {"name":"藍莓","category":"fruit","unit":"100g","nutrition":{"calories":57,"protein":0.7,"carbs":14.5,"fat":0.3}},
+  {"name":"蘋果","category":"fruit","unit":"100g","nutrition":{"calories":52,"protein":0.3,"carbs":14,"fat":0.2}},
+  {"name":"奇異果","category":"fruit","unit":"100g","nutrition":{"calories":61,"protein":1.1,"carbs":15,"fat":0.5}},
+  {"name":"芭樂","category":"fruit","unit":"100g","nutrition":{"calories":68,"protein":2.6,"carbs":14,"fat":1}},
+  {"name":"高麗菜","category":"vegetable","unit":"100g","nutrition":{"calories":23,"protein":1.3,"carbs":5.3,"fat":0.1}},
+  {"name":"蛋白質綜合穀片","category":"carbs","unit":"100g","nutrition":{"calories":450,"protein":32,"carbs":34,"fat":24}},
+  {"name":"杏仁","category":"fat","unit":"100g","nutrition":{"calories":579,"protein":21.2,"carbs":21.6,"fat":49.9}},
+  {"name":"核桃","category":"fat","unit":"100g","nutrition":{"calories":654,"protein":15.2,"carbs":13.7,"fat":65.2}},
+  {"name":"腰果","category":"fat","unit":"100g","nutrition":{"calories":553,"protein":18.2,"carbs":30.2,"fat":43.9}},
+  {"name":"花生醬","category":"fat","unit":"100g","nutrition":{"calories":588,"protein":25,"carbs":20,"fat":50}},
+  {"name":"橄欖油","category":"fat","unit":"100g","nutrition":{"calories":884,"protein":0,"carbs":0,"fat":100}},
+  {"name":"酪梨","category":"fat","unit":"100g","nutrition":{"calories":160,"protein":2,"carbs":8.5,"fat":14.7}}
+];
+const DEFAULT_COMBOS=[
+  {"name":"優格組","type":"combo","items":[
+    {"food":"Kirkland希臘優格","gram":150},
+    {"food":"質立希臘式優格","gram":50},
+    {"food":"藍莓","gram":20},
+    {"food":"蛋白質綜合穀片","gram":10}
+  ]}
+];
+const DEFAULT_SERVINGS={
+  "大雞蛋":[{"label":"1顆 60g","qty":1,"gram":60}],
+  "雞里肌":[{"label":"1份 120g","gram":120}],
+  "雞胸肉":[{"label":"1份 120g","gram":120}],
+  "蝦仁":[{"label":"1份 50g","gram":50}],
+  "無糖豆漿":[{"label":"1杯 300ml","ml":300},{"label":"半杯 150ml","ml":150}],
+  "蛋白粉":[{"label":"1匙 30g","gram":30}],
+  "Kirkland希臘優格":[{"label":"1份 150g","gram":150}],
+  "質立希臘式優格":[{"label":"1份 50g","gram":50}],
+  "白飯":[{"label":"半碗 100g","gram":100},{"label":"1碗 200g","gram":200}],
+  "燕麥":[{"label":"1份 30g","gram":30}],
+  "香蕉":[{"label":"1根 120g","gram":120},{"label":"半根 60g","gram":60}],
+  "藍莓":[{"label":"1份 20g","gram":20}],
+  "蛋白質綜合穀片":[{"label":"1份 10g","gram":10}],
+  "地瓜":[{"label":"1條 150g","gram":150}],
+  "高麗菜":[{"label":"1手掌 50g","gram":50},{"label":"3手掌 150g","gram":150}],
+  "蘋果":[{"label":"1顆 180g","gram":180}],
+  "奇異果":[{"label":"1顆 75g","gram":75}],
+  "芭樂":[{"label":"1顆 250g","gram":250}],
+  "優格組":[{"label":"1組","qty":1}],
+  "杏仁":[{"label":"1份 10g","gram":10}],
+  "核桃":[{"label":"1份 10g","gram":10}],
+  "腰果":[{"label":"1份 10g","gram":10}],
+  "花生醬":[{"label":"1匙 15g","gram":15}],
+  "橄欖油":[{"label":"1茶匙 5g","gram":5}],
+  "酪梨":[{"label":"半顆 70g","gram":70}]
+};
+const DEFAULT_PROMPTS={
+  "projectIntro": "Personal Fitness OS / Food OS 專案說明：\n\n這是一套個人飲食與訓練管理系統。Food OS 的目標不是追求完美紀錄，而是建立可長期使用的個人食材資料庫、每日飲食紀錄與備份流程。\n\n核心架構：\n1. Food Database：常吃食物建立資料庫，營養資料以每 100g / 100ml / unit 為基準。\n2. Serving Database：份量換算由系統處理，不需要在 prompt 裡重複定義。\n3. Combo Database：常吃且固定份量的餐點組合，例如優格組。\n4. Daily Logs：每日飲食紀錄使用 date 儲存，格式為 {\"date\":\"YYYY-MM-DD\",\"food\":[]}。\n5. Custom Foods：外食、新食物、聚餐不需建檔，使用 custom + nutrition 記錄。\n6. Backup System：支援匯出今日與匯出全部資料，避免 localStorage 資料遺失。\n7. Favorites：常用食材會跟著備份匯出，可在食材庫用 ⭐ 收藏 / 取消收藏。\n8. Default Servings：常用份量由系統內的 servings 管理，分類快速加入會自動套用常用份量。\n\nAI 使用方式：\nA. 今天吃了什麼 → 使用「🍱 Daily Food Parser」輸出 Daily Log JSON。\nB. 常吃的新食物 → 使用「➕ Food Database Generator」建立 Food Database JSON。\nC. 固定早餐 / 優格組 / 訓練前餐 → 使用「🌟 Combo Generator」建立 Combo JSON。\n\n建立原則：\n- 常吃超過 3 次 → 建立 Food Database。\n- 固定且常吃 → 建立 Combo。\n- 偶爾吃、外食、聚餐 → 使用 custom。\n- 不要把所有食物都建立 Food Database；資料庫只保留真正會反覆出現的食物。",
+  "globalRules": "所有輸出都必須遵守：\n\n1. 使用 json code block 包裝輸出。\n2. 不要在 code block 外加入任何文字。\n3. 不要輸出解釋。\n4. code block 內必須是合法 JSON。\n5. JSON key 和 string value 必須使用雙引號。\n6. 不要使用註解。\n7. 不要使用 trailing comma。\n8. 數值必須是 number，不要把單位寫進數值。\n9. 若需要估算，請在該 item 加上 \"estimated\": true。\n10. Daily Food Log 使用 {\"date\":\"YYYY-MM-DD\",\"food\":[]}。\n11. Food Database JSON 只描述食材本身；是否加入常用、常用份量可在 Food OS 內設定。\n12. favorites、usageStats、servings 是系統備份資料，不是每日飲食 JSON 必填欄位。\n13. 輸出必須可直接貼進 Food OS。\n14. 只有當使用者明確要求「純 JSON / 不要 markdown」時，才輸出裸 JSON。",
+  "dailyFoodParser": "你是 Personal Fitness OS 的 Food Parser。\n\n請將我輸入的飲食內容轉換成 Food OS 可匯入的 Daily Food Log JSON。\n\n輸出規則：\n1. 使用 json code block 包裝輸出。\n2. 不要在 code block 外加入任何文字。\n3. 不要輸出解釋。\n4. code block 內必須是合法 JSON。\n5. 輸出格式必須是 {\"date\":\"YYYY-MM-DD\",\"food\":[]}。\n6. 若我沒有提供日期，date 使用今天日期。\n7. 已存在於 Food Database 的食物，使用 food。\n8. 不存在於 Food Database 的食物，使用 custom。\n9. custom 必須包含 nutrition。\n10. 固體使用 gram；液體使用 ml；雞蛋等天然單位食物可使用 qty。\n11. 若份量不明，請用合理估算並加上 \"estimated\": true。\n12. 若無法估算，請不要亂填，改用 custom 並在名稱中標註「估算不足」。\n13. 常用食材仍然只用 food，不要因為是常用就改格式。\n14. favorites、usageStats、servings 不屬於 Daily Food Log，請不要放進每日飲食 JSON。\n\nFood Database 常見名稱：\n雞里肌、雞胸肉、大雞蛋、蝦仁、無糖豆漿、蛋白粉、Kirkland希臘優格、質立希臘式優格、白飯、燕麥、香蕉、藍莓、高麗菜、地瓜、板豆腐、嫩豆腐、鮭魚、鯛魚、優格組。\n\n輸出格式範例：\n```json\n{\n  \"date\":\"2026-06-06\",\n  \"food\":[\n    {\"food\":\"雞里肌\",\"gram\":250},\n    {\"food\":\"無糖豆漿\",\"ml\":300},\n    {\"food\":\"大雞蛋\",\"qty\":2},\n    {\"food\":\"優格組\",\"qty\":1},\n    {\"custom\":\"外食雞肉便當估算\",\"estimated\":true,\"nutrition\":{\"calories\":520,\"protein\":32,\"carbs\":60,\"fat\":16}}\n  ]\n}\n```",
+  "foodDatabaseGenerator": "請將以下營養標示轉換成 Food OS 的 Food Database JSON。\n\n輸出規則：\n1. 使用 json code block 包裝輸出。\n2. 不要在 code block 外加入任何文字。\n3. 不要輸出解釋。\n4. code block 內必須是合法 JSON。\n5. 固體食物優先轉成 unit:\"100g\"。\n6. 液體優先轉成 unit:\"100ml\"。\n7. 若食物天然以單位計算，可使用 unit:\"1顆\" 或 unit:\"1份\"。\n8. nutrition 必須包含 calories, protein, carbs, fat。\n9. category 是可擴展的自由字串。\n10. 優先使用既有 category；若不適合，可建立合理的新 category。\n11. 數值使用 number，不要加單位文字。\n12. Food Database JSON 只負責食材資料，不要輸出 favorites 或 usageStats。\n13. 若知道常用份量，可加入 defaultServing，例如 {\"unit\":\"gram\",\"amount\":53}；若不知道可省略，由 Food OS 內設定。\n\n建議 category：\nprotein, carbs, fruit, vegetable, fat, drink, snack, dessert, supplement, sauce, other\n\n輸出格式：\n```json\n{\n  \"name\":\"\",\n  \"category\":\"protein\",\n  \"unit\":\"100g\",\n  \"nutrition\":{\n    \"calories\":0,\n    \"protein\":0,\n    \"carbs\":0,\n    \"fat\":0\n  },\n  \"defaultServing\":{\"unit\":\"gram\",\"amount\":53}\n}\n```",
+  "comboGenerator": "請將我描述的固定餐點轉換成 Food OS 的 Combo JSON。\n\n輸出規則：\n1. 使用 json code block 包裝輸出。\n2. 不要在 code block 外加入任何文字。\n3. 不要輸出解釋。\n4. code block 內必須是合法 JSON。\n5. items 優先使用 Food Database 內已存在的標準食物名稱。\n6. 使用 gram / ml / qty。\n7. 不要在 Combo 裡放 custom 臨時食物。\n8. 若某個 item 不存在於 Food Database，請不要亂創 food 名稱，改輸出：\n   {\"missing_food\":\"食物名稱\",\"note\":\"需要先建立 Food Database\"}\n\n輸出格式：\n```json\n{\n  \"name\":\"早餐組\",\n  \"type\":\"combo\",\n  \"items\":[\n    {\"food\":\"大雞蛋\",\"qty\":2},\n    {\"food\":\"無糖豆漿\",\"ml\":300},\n    {\"food\":\"香蕉\",\"gram\":120}\n  ]\n}\n```"
+};
+const ALIASES={
+  "蛋":"大雞蛋","雞蛋":"大雞蛋","雞胸":"雞胸肉","雞里肌肉":"雞里肌",
+  "豆漿":"無糖豆漿","無糖豆乳":"無糖豆漿","優格":"Kirkland希臘優格",
+  "乳清":"蛋白粉","蛋白":"蛋白粉","飯":"白飯","白飯半碗":"白飯",
+  "穀片":"蛋白質綜合穀片","蛋白穀片":"蛋白質綜合穀片"
+};
+let DATA={foods:DEFAULT_FOODS,combos:DEFAULT_COMBOS,entries:{},settings:{calories:1300,protein:105,carbs:90,fat:45},favorites:["優格組","大雞蛋","雞里肌","雞胸肉","無糖豆漿","蛋白粉","白飯","燕麥","香蕉","高麗菜"],usageStats:{},servings:DEFAULT_SERVINGS,prompts:JSON.parse(JSON.stringify(DEFAULT_PROMPTS))};
+let cur=ymd(new Date());
+function ymd(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+function parseYmd(s){const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)}
+function fmt(s){const d=parseYmd(s);return `${d.getMonth()+1} 月 ${d.getDate()} 日 · ${["週日","週一","週二","週三","週四","週五","週六"][d.getDay()]}`}
+function E(){if(!DATA.entries[cur])DATA.entries[cur]=[];return DATA.entries[cur]}
+function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function fmtNum(n){n=Number(n)||0;return Number.isInteger(n)?String(n):n.toFixed(1).replace(/\.0$/,"")}
+function save(){localStorage.setItem(KEY,JSON.stringify(DATA))}
+function load(){
+  try{
+    const v=localStorage.getItem(KEY)||localStorage.getItem(OLD_KEY);
+    if(v)DATA=Object.assign(DATA,JSON.parse(v));
+  }catch(e){}
+  if(!Array.isArray(DATA.favorites))DATA.favorites=["優格組","大雞蛋","雞里肌","雞胸肉","無糖豆漿","蛋白粉","白飯","燕麥","香蕉","高麗菜"];
+  if(!DATA.usageStats)DATA.usageStats={};
+  if(!DATA.servings)DATA.servings=JSON.parse(JSON.stringify(DEFAULT_SERVINGS));
+  if(!DATA.prompts)DATA.prompts=JSON.parse(JSON.stringify(DEFAULT_PROMPTS));
+  DATA.prompts=Object.assign(JSON.parse(JSON.stringify(DEFAULT_PROMPTS)), DATA.prompts||{});
+  if(!DATA.servings["晨間里肌燒肉"])DATA.servings["晨間里肌燒肉"]=[{label:"1份 53g","gram":53}];
+  if((DATA.foods||[]).some(f=>f.name==="晨間里肌燒肉") && !DATA.favorites.includes("晨間里肌燒肉"))DATA.favorites.push("晨間里肌燒肉");
+}
+function downloadJSON(filename,data){
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+function chooseJSONFile(callback){
+  const input=document.createElement("input");
+  input.type="file"; input.accept="application/json,.json";
+  input.onchange=()=>{
+    const file=input.files&&input.files[0]; if(!file)return;
+    const reader=new FileReader();
+    reader.onload=()=>{try{callback(JSON.parse(reader.result),file)}catch(e){alert("JSON 檔案格式錯誤。")}};
+    reader.readAsText(file);
+  };
+  input.click();
+}
+function importFoodBackup(raw){
+  if(raw.foods)DATA.foods=raw.foods;
+  if(raw.combos)DATA.combos=raw.combos;
+  if(raw.settings)DATA.settings=raw.settings;
+  if(raw.favorites)DATA.favorites=raw.favorites;
+  if(raw.usageStats)DATA.usageStats=raw.usageStats;
+  if(raw.servings)DATA.servings=raw.servings;
+  if(raw.prompts)DATA.prompts=Object.assign(JSON.parse(JSON.stringify(DEFAULT_PROMPTS)), raw.prompts);
+  if(raw.entries)DATA.entries=raw.entries;
+  if(raw.logs){
+    DATA.entries={};
+    raw.logs.forEach(x=>{if(x.date)DATA.entries[x.date]=x.food||[]});
+  }
+  save();renderAll();
+}
+
+function foodsMap(){return Object.fromEntries(DATA.foods.map(f=>[f.name,f]))}
+function combosMap(){return Object.fromEntries((DATA.combos||[]).map(c=>[c.name,c]))}
+function standardName(name){return ALIASES[name]||name}
+function isFavorite(name){return (DATA.favorites||[]).includes(name)}
+function setFavorite(name,on){
+  name=standardName(name);
+  if(!DATA.favorites)DATA.favorites=[];
+  DATA.favorites=DATA.favorites.filter(x=>x!==name);
+  if(on)DATA.favorites.push(name);
+  save();renderAll();
+}
+function bumpUsage(name){
+  name=standardName(name);
+  if(!DATA.usageStats)DATA.usageStats={};
+  DATA.usageStats[name]=(DATA.usageStats[name]||0)+1;
+}
+function getServings(name){
+  name=standardName(name);
+  return (DATA.servings&&DATA.servings[name]) || DEFAULT_SERVINGS[name] || [];
+}
+function setDefaultServing(name,unit,amount){
+  name=standardName(name);
+  amount=Number(amount)||1;
+  if(!DATA.servings)DATA.servings={};
+  const label=unit==="gram"?`1份 ${amount}g`:unit==="ml"?`1份 ${amount}ml`:`1份 ${amount}顆/份`;
+  const row={label};
+  if(unit==="gram")row.gram=amount;
+  if(unit==="ml")row.ml=amount;
+  if(unit==="qty")row.qty=amount;
+  DATA.servings[name]=[row];
+  save();renderAll();
+}
+function calcOne(log){
+  const fmap=foodsMap(), cmap=combosMap();
+  const total={calories:0,protein:0,carbs:0,fat:0};
+
+  // Mode 2: custom one-time food with direct nutrition.
+  // Example:
+  // {"custom":"7-11舒肥雞胸","nutrition":{"calories":120,"protein":24,"carbs":2,"fat":1}}
+  if(log.custom || log.type==="custom"){
+    const n=log.nutrition||{};
+    ["calories","protein","carbs","fat"].forEach(k=>total[k]=Number(n[k])||0);
+    return total;
+  }
+
+  let name=standardName(log.food||log.name);
+  if(cmap[name]){
+    const qty=Number(log.qty||1)||1;
+    for(let i=0;i<qty;i++){
+      (cmap[name].items||[]).forEach(it=>{const c=calcOne(it);["calories","protein","carbs","fat"].forEach(k=>total[k]+=c[k])});
+    }
+    return total;
+  }
+  const f=fmap[name]; if(!f)return total;
+  let scale=1;
+  if(log.gram) scale=Number(log.gram)/100;
+  else if(log.ml) scale=Number(log.ml)/100;
+  else if(log.qty) scale=Number(log.qty);
+  else scale=1;
+  if(f.unit==="1顆") scale=Number(log.qty||1);
+  ["calories","protein","carbs","fat"].forEach(k=>total[k]=(Number(f.nutrition[k])||0)*scale);
+  return total;
+}
+function totalNutrition(){
+  const t={calories:0,protein:0,carbs:0,fat:0};
+  E().forEach(log=>{const c=calcOne(log);["calories","protein","carbs","fat"].forEach(k=>t[k]+=c[k])});
+  return t;
+}
+function addFoodLog(food,unit,amount,soft=false){
+  const name=standardName(food);
+  const log={food:name};
+  if(unit==="gram") log.gram=Number(amount);
+  if(unit==="ml") log.ml=Number(amount);
+  if(unit==="qty") log.qty=Number(amount);
+  E().push(log); bumpUsage(name); save();
+  if(soft){
+    renderMetrics();
+    renderLogs();
+    renderHistory();
+  }else{
+    renderAll();
+  }
+}
+function importLogs(input){
+  let targetDate=cur;
+  let arr=input;
+  if(input && !Array.isArray(input) && typeof input==="object"){
+    if(input.date) targetDate=input.date;
+    arr=input.food || [];
+  }
+  if(!DATA.entries[targetDate]) DATA.entries[targetDate]=[];
+  let n=0, missing=[];
+  arr.forEach(x=>{
+    if(!x)return;
+    if(x.custom || x.type==="custom"){
+      if(!x.nutrition){missing.push(x.custom||"custom"); return;}
+      DATA.entries[targetDate].push({
+        custom:x.custom||x.name||"臨時食物",
+        type:"custom",
+        estimated:!!x.estimated,
+        nutrition:x.nutrition
+      });
+      n++; return;
+    }
+    let food=standardName(x.food||x.name);
+    DATA.entries[targetDate].push(Object.assign({},x,{food}));
+    bumpUsage(food);
+    n++;
+  });
+  cur=targetDate;
+  save(); renderAll();
+  return {added:n, missing, date:targetDate};
+}
+function renderMetrics(){
+  const t=totalNutrition(), g=DATA.settings;
+  const items=[["calories","🔥","熱量","kcal"],["protein","🥩","蛋白質","g"],["carbs","🍚","碳水","g"],["fat","🥑","脂肪","g"]];
+  metricGrid.innerHTML=items.map(([k,em,l,u])=>{
+    const p=Math.min(100,Math.round((t[k]/g[k])*100)||0);
+    return `<div class="metric"><div class="num">${em} ${fmtNum(t[k])}</div><div class="goal">/ ${fmtNum(g[k])} ${u}</div><div class="lab">${l}</div><div class="bar"><span style="width:${p}%"></span></div></div>`
+  }).join("");
+  deficits.innerHTML=items.map(([k,em,l,u])=>{
+    const d=g[k]-t[k];return `<div class="defline"><span>${l}</span><b>${d>0?`還差 ${fmtNum(d)} ${u}`:`已達標 +${fmtNum(Math.abs(d))} ${u}`}</b></div>`
+  }).join("");
+  // v1.3: 不再輸出固定建議補充，避免假智慧推薦。
+}
+function logText(log){
+  const c=calcOne(log);
+  if(log.custom || log.type==="custom"){
+    return `<b>${esc(log.custom||"臨時食物")}</b><span class="meta">custom｜${fmtNum(c.calories)} kcal｜P ${fmtNum(c.protein)} C ${fmtNum(c.carbs)} F ${fmtNum(c.fat)}</span>`;
+  }
+  const unit=log.gram?`${log.gram}g`:log.ml?`${log.ml}ml`:log.qty?`${log.qty}份/顆`:"1份";
+  return `<b>${esc(log.food)}</b><span class="meta">${esc(unit)}｜${fmtNum(c.calories)} kcal｜P ${fmtNum(c.protein)} C ${fmtNum(c.carbs)} F ${fmtNum(c.fat)}</span>`;
+}
+function renderLogs(){
+  const html=E().map((log,i)=>`<li><span>${logText(log)}</span><button class="x" data-i="${i}">✕</button></li>`).join("")||"<li><span class='meta'>尚未記錄</span></li>";
+  dashList.innerHTML=html; logList.innerHTML=html;
+}
+function allFoodNames(){
+  const comboNames=(DATA.combos||[]).map(c=>c.name);
+  const foodNames=DATA.foods.map(f=>f.name);
+  return [...comboNames, ...foodNames];
+}
+function unitDefaultFor(name){
+  const f=foodsMap()[name], c=combosMap()[name];
+  if(c) return {unit:"qty", amount:1};
+  const s=getServings(name);
+  if(s[0]){
+    if(s[0].gram) return {unit:"gram", amount:s[0].gram};
+    if(s[0].ml) return {unit:"ml", amount:s[0].ml};
+    if(s[0].qty) return {unit:"qty", amount:s[0].qty};
+  }
+  if(f && f.unit==="100g") return {unit:"gram", amount:100};
+  if(f && f.unit==="100ml") return {unit:"ml", amount:100};
+  return {unit:"qty", amount:1};
+}
+function servingText(name){
+  const f=foodsMap()[name], c=combosMap()[name], s=getServings(name);
+  if(c) return `組合：${c.items.map(i=>`${i.food}${i.gram?i.gram+"g":i.ml?i.ml+"ml":i.qty+"份"}`).join(" + ")}`;
+  if(f) return `資料庫單位：${f.unit}${f.weight?`｜1顆約 ${f.weight}g`:""}｜常用份量：${s.map(x=>x.label).join("、")||"無"}`;
+  return "";
+}
+function renderGlobalQuickAdd(){
+  const select=document.getElementById("foodSelect");
+  if(!select) return;
+  select.innerHTML=allFoodNames().map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");
+  updateGlobalServingHint();
+}
+function updateGlobalServingHint(){
+  const name=foodSelect.value;
+  const d=unitDefaultFor(name);
+  unitSelect.value=d.unit;
+  amountInput.value=d.amount;
+  servingHint.textContent=servingText(name);
+}
+function renderQuickAddGroups(){
+  const exists=n=>combosMap()[n]||foodsMap()[n];
+  const favs=(DATA.favorites||[]).filter(exists).sort((a,b)=>(DATA.usageStats?.[b]||0)-(DATA.usageStats?.[a]||0)||a.localeCompare(b));
+  const cats={protein:"🥩 Protein",carbs:"🍚 Carbs",fruit:"🍓 Fruit",vegetable:"🥬 Vegetable",fat:"🥑 Fats / Others",other:"📦 Others"};
+  const dynamicCats=[...new Set(DATA.foods.map(f=>f.category||"other"))];
+  const groups=[
+    {key:"common", title:"⭐ 常用", names:favs},
+    ...dynamicCats.map(cat=>({
+      key:cat,
+      title:cats[cat]||`📦 ${cat}`,
+      names:DATA.foods.filter(f=>(f.category||"other")===cat).map(f=>f.name)
+    })),
+    {key:"combo", title:"🌟 Combo", names:(DATA.combos||[]).map(c=>c.name)}
+  ].filter(g=>g.names.length);
+
+  quickAddGroups.innerHTML=groups.map(g=>`
+    <div class="group quick-category-card">
+      <button class="grouphead" data-toggle><span><b>${g.title}</b><small>${g.names.length} 個項目</small></span><span>▼</span></button>
+      <div class="groupbody quickGroupBody">
+        <div class="itemgrid">
+          ${g.names.map(n=>{
+            const d=unitDefaultFor(n);
+            const info=servingText(n);
+            const usage=DATA.usageStats?.[n]?`｜已用 ${DATA.usageStats[n]} 次`:"";
+            return `<div class="itemcard quickItem" data-quick-card="${esc(n)}">
+              <div class="topline">
+                <div>
+                  <div class="n">${esc(n)}</div>
+                  <div class="m">${esc(info)}${usage}</div>
+                </div>
+                <button class="starbtn ${isFavorite(n)?"on":""}" data-fav-food="${esc(n)}">${isFavorite(n)?"★ 常用":"☆ 加常用"}</button>
+              </div>
+              <div class="quickControls">
+                <input class="quickAmount" type="number" min="0" step="1" value="${esc(d.amount)}" aria-label="份量">
+                <select class="quickUnit" aria-label="單位">
+                  <option value="gram" ${d.unit==="gram"?"selected":""}>g</option>
+                  <option value="ml" ${d.unit==="ml"?"selected":""}>ml</option>
+                  <option value="qty" ${d.unit==="qty"?"selected":""}>顆/份</option>
+                </select>
+                <button class="quickAddBtn" data-quick-add="${esc(n)}">加入</button>
+              </div>
+              <div class="quickMsg"></div>
+            </div>`;
+          }).join("")}
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+function renderDB(){
+  const cats={protein:"🥩 Protein",carbs:"🍚 Carbs",fruit:"🍓 Fruit",vegetable:"🥬 Vegetable",fat:"🥑 Fats / Others",other:"📦 Others"};
+  const grouped={};
+  DATA.foods.forEach(f=>{const k=f.category||"other"; if(!grouped[k])grouped[k]=[]; grouped[k].push(f)});
+  const servingEditor=(name)=>{
+    const d=unitDefaultFor(name);
+    return `<div class="servingEditor">
+      <input data-serving-amount="${esc(name)}" type="number" min="0" step="1" value="${esc(d.amount)}" aria-label="常用份量">
+      <select data-serving-unit="${esc(name)}" aria-label="常用單位">
+        <option value="gram" ${d.unit==="gram"?"selected":""}>g</option>
+        <option value="ml" ${d.unit==="ml"?"selected":""}>ml</option>
+        <option value="qty" ${d.unit==="qty"?"selected":""}>顆/份</option>
+      </select>
+      <button data-save-serving="${esc(name)}">儲存份量</button>
+    </div><div class="servingSaved" data-serving-msg="${esc(name)}"></div>`;
+  };
+  dbList.innerHTML=Object.entries(grouped).map(([cat,items])=>`
+    <div class="group open">
+      <button class="grouphead" data-toggle><span><b>${cats[cat]||cat}</b><small>${items.length} 個食材</small></span><span>▼</span></button>
+      <div class="groupbody"><div class="itemgrid">${items.map(f=>`<div class="itemcard">
+        <div class="topline">
+          <div>
+            <div class="n">${esc(f.name)}</div>
+            <div class="m">${esc(f.unit)}｜${fmtNum(f.nutrition.calories)} kcal｜P ${fmtNum(f.nutrition.protein)} C ${fmtNum(f.nutrition.carbs)} F ${fmtNum(f.nutrition.fat)}${DATA.usageStats?.[f.name]?`｜已用 ${DATA.usageStats[f.name]} 次`:""}</div>
+            <div class="m">常用份量：${esc(servingText(f.name).replace(/^資料庫單位：.*?｜常用份量：/,""))}</div>
+          </div>
+          <button class="starbtn ${isFavorite(f.name)?"on":""}" data-fav-food="${esc(f.name)}">${isFavorite(f.name)?"★ 常用":"☆ 加常用"}</button>
+        </div>
+        ${servingEditor(f.name)}
+      </div>`).join("")}</div></div>
+    </div>`).join("") + `
+    <div class="group open"><button class="grouphead" data-toggle><span><b>🌟 Combo</b><small>${(DATA.combos||[]).length} 個組合</small></span><span>▼</span></button>
+    <div class="groupbody"><div class="itemgrid">${(DATA.combos||[]).map(c=>`<div class="itemcard">
+      <div class="topline">
+        <div>
+          <div class="n">${esc(c.name)}</div>
+          <div class="m">${c.items.map(i=>`${i.food}${i.gram?i.gram+"g":i.ml?i.ml+"ml":i.qty+"份"}`).join(" + ")}${DATA.usageStats?.[c.name]?`｜已用 ${DATA.usageStats[c.name]} 次`:""}</div>
+          <div class="m">常用份量：${esc(servingText(c.name).replace(/^組合：/,""))}</div>
+        </div>
+        <button class="starbtn ${isFavorite(c.name)?"on":""}" data-fav-food="${esc(c.name)}">${isFavorite(c.name)?"★ 常用":"☆ 加常用"}</button>
+      </div>
+      ${servingEditor(c.name)}
+    </div>`).join("")}</div></div></div>`;
+}
+function renderSettings(){
+  targetCalories.value=DATA.settings.calories; targetProtein.value=DATA.settings.protein; targetCarbs.value=DATA.settings.carbs; targetFat.value=DATA.settings.fat;
+}
+function renderAll(){
+  dlabel.textContent=fmt(cur); document.querySelectorAll(".dateMirror").forEach(e=>e.textContent=fmt(cur));
+  renderMetrics(); renderLogs(); renderGlobalQuickAdd(); renderQuickAddGroups(); renderDB(); renderHistory(); renderSettings(); renderGuidePrompts();
+}
+
+function renderGuidePrompts(){
+  if(!DATA.prompts)DATA.prompts=Object.assign({},DEFAULT_PROMPTS);
+  Object.keys(DEFAULT_PROMPTS).forEach(k=>{
+    const el=document.getElementById(`prompt_${k}`);
+    if(el && el.value !== (DATA.prompts[k]||"")) el.value=DATA.prompts[k]||"";
+  });
+}
+document.body.addEventListener("click",e=>{
+  const tab=e.target.closest("nav button"); if(tab){document.querySelectorAll("nav button").forEach(b=>b.classList.remove("on")); tab.classList.add("on"); document.querySelectorAll(".panel").forEach(p=>p.classList.remove("on")); document.getElementById(tab.dataset.tab).classList.add("on"); renderAll(); return}
+  if(e.target.id==="prev"||e.target.classList.contains("prevMirror")){const d=parseYmd(cur);d.setDate(d.getDate()-1);cur=ymd(d);renderAll();return}
+  if(e.target.id==="next"||e.target.classList.contains("nextMirror")){const d=parseYmd(cur);d.setDate(d.getDate()+1);cur=ymd(d);renderAll();return}
+  const hd=e.target.closest("[data-history-date]"); if(hd){cur=hd.dataset.historyDate;document.querySelectorAll("nav button").forEach(b=>b.classList.remove("on"));document.querySelector('nav button[data-tab="dash"]').classList.add("on");document.querySelectorAll(".panel").forEach(p=>p.classList.remove("on"));document.getElementById("dash").classList.add("on");renderAll();return}
+  const tog=e.target.closest("[data-toggle]"); if(tog){tog.closest(".group").classList.toggle("open");return}
+  const fav=e.target.closest("[data-fav-food]"); if(fav){setFavorite(fav.dataset.favFood,!isFavorite(fav.dataset.favFood));return}
+  const sv=e.target.closest("[data-save-serving]"); if(sv){
+    const name=sv.dataset.saveServing;
+    const amount=document.querySelector(`[data-serving-amount="${CSS.escape(name)}"]`)?.value||1;
+    const unit=document.querySelector(`[data-serving-unit="${CSS.escape(name)}"]`)?.value||unitDefaultFor(name).unit;
+    setDefaultServing(name,unit,amount);
+    const msg=document.querySelector(`[data-serving-msg="${CSS.escape(name)}"]`);
+    if(msg)msg.textContent="已儲存常用份量";
+    return
+  }
+  const s=e.target.closest("[data-serving-food]"); if(s){addFoodLog(s.dataset.servingFood,s.dataset.unit,s.dataset.amount);return}
+  const qa=e.target.closest("[data-quick-add]"); if(qa){
+    const card=qa.closest(".quickItem");
+    const name=qa.dataset.quickAdd;
+    const amount=card?.querySelector(".quickAmount")?.value||1;
+    const unit=card?.querySelector(".quickUnit")?.value||unitDefaultFor(name).unit;
+    addFoodLog(name,unit,amount,true);
+    if(card){
+      card.classList.remove("quickAddFlash");
+      void card.offsetWidth;
+      card.classList.add("quickAddFlash");
+      const msg=card.querySelector(".quickMsg");
+      if(msg){
+        const unitLabel=unit==="gram"?"g":unit==="ml"?"ml":"顆/份";
+        msg.textContent=`已加入：${amount} ${unitLabel}`;
+        setTimeout(()=>{msg.textContent=""},1400);
+      }
+    }
+    return
+  }
+  const x=e.target.closest(".x"); if(x){E().splice(+x.dataset.i,1);save();renderAll();return}
+});
+function handleFoodDailyImport(input){
+  const r=importLogs(input);
+  logMsg.textContent=`已匯入 ${r.added} 筆到 ${r.date}${r.missing.length?`，custom 缺營養素：${r.missing.join("、")}`:""}`;
+}
+importLogJson.onclick=()=>chooseJSONFile(input=>handleFoodDailyImport(input));
+if(document.getElementById("importLogJsonText")) importLogJsonText.onclick=()=>{try{handleFoodDailyImport(JSON.parse(logJson.value))}catch(e){logMsg.textContent="JSON 格式錯誤"}};
+exportLogJson.onclick=()=>{downloadJSON(`FoodOS_${cur}_daily.json`,{date:cur,food:E()});logMsg.textContent="已下載今日紀錄 JSON 檔"};
+clearLogJson.onclick=()=>{logJson.value="";logMsg.textContent=""};
+if(document.getElementById("exportAllJson")) exportAllJson.onclick=()=>{downloadJSON(`FoodOS_backup_${ymd(new Date())}.json`,exportAllBackup());logMsg.textContent="已下載全部備份 JSON 檔"};
+if(document.getElementById("exportAllJsonHistory")) exportAllJsonHistory.onclick=()=>downloadJSON(`FoodOS_backup_${ymd(new Date())}.json`,exportAllBackup());
+if(document.getElementById("importAllJsonHistory")) importAllJsonHistory.onclick=()=>chooseJSONFile(raw=>{if(!confirm("匯入全部備份會覆蓋目前 Food OS 資料，確定嗎？"))return;importFoodBackup(raw);alert("Food OS 全部備份已匯入。")});
+
+function importComboData(raw){
+  const arr=Array.isArray(raw)?raw:[raw];
+  let n=0, bad=[];
+  arr.forEach(c=>{
+    if(!c || !c.name || !Array.isArray(c.items)){bad.push(c&&c.name?c.name:"未命名"); return;}
+    const combo={name:c.name,type:"combo",items:c.items.map(it=>Object.assign({},it,{food:standardName(it.food||it.name)}))};
+    const idx=(DATA.combos||[]).findIndex(x=>x.name===combo.name);
+    if(idx>=0) DATA.combos[idx]=combo; else DATA.combos.push(combo);
+    n++;
+  });
+  save(); renderAll();
+  return {added:n,bad};
+}
+
+importFoodDb.onclick=()=>{
+  try{
+    const raw=JSON.parse(foodDbJson.value); const arr=Array.isArray(raw)?raw:[raw]; let n=0;
+    const addFav=document.getElementById("addFoodToFavorite")?.checked;
+    arr.forEach(f=>{
+      if(!f.name||!f.nutrition)return;
+      const idx=DATA.foods.findIndex(x=>x.name===f.name);
+      if(idx>=0)DATA.foods[idx]=f; else DATA.foods.push(f);
+      const ds=f.defaultServing||f.serving||null;
+      if(ds){
+        const unit=ds.unit||("gram" in ds?"gram":"ml" in ds?"ml":"qty");
+        const amount=ds.amount||ds.gram||ds.ml||ds.qty||1;
+        setDefaultServing(f.name,unit,amount);
+      }else if(f.name==="晨間里肌燒肉"){
+        setDefaultServing(f.name,"gram",53);
+      }
+      if(addFav && !isFavorite(f.name))DATA.favorites.push(f.name);
+      n++;
+    });
+    save();renderAll();foodDbMsg.textContent=`已新增/更新 ${n} 筆食材${addFav?"，並加入常用":""}`;
+  }catch(e){foodDbMsg.textContent="JSON 格式錯誤"}
+};
+exportFoodDb.onclick=()=>{downloadJSON(`FoodOS_food_database_${ymd(new Date())}.json`,{foods:DATA.foods,combos:DATA.combos,favorites:DATA.favorites,usageStats:DATA.usageStats,servings:DATA.servings});foodDbMsg.textContent="已下載食材資料庫 JSON 檔"};
+clearFoodDbJson.onclick=()=>{foodDbJson.value="";foodDbMsg.textContent=""};
+saveSettings.onclick=()=>{DATA.settings={calories:+targetCalories.value||1300,protein:+targetProtein.value||105,carbs:+targetCarbs.value||90,fat:+targetFat.value||45};save();saved.classList.add("show");setTimeout(()=>saved.classList.remove("show"),1200);renderAll()};
+reset.onclick=()=>{if(confirm("確定清空所有 Food OS 資料？")){localStorage.removeItem(KEY);location.reload()}};
+importCombo.onclick=()=>{
+  try{
+    const raw=JSON.parse(comboJson.value);
+    const r=importComboData(raw);
+    comboMsg.textContent=`已新增/更新 ${r.added} 個 Combo${r.bad.length?`，格式錯誤：${r.bad.join("、")}`:""}`;
+  }catch(e){comboMsg.textContent="JSON 格式錯誤"}
+};
+exportCombos.onclick=()=>{downloadJSON(`FoodOS_combos_${ymd(new Date())}.json`,DATA.combos||[]);comboMsg.textContent="已下載 Combo JSON 檔"};
+clearComboJson.onclick=()=>{comboJson.value="";comboMsg.textContent=""};
+if(document.getElementById("foodSelect")){
+  foodSelect.addEventListener("change",updateGlobalServingHint);
+  document.getElementById("addLog").onclick=()=>addFoodLog(foodSelect.value,unitSelect.value,amountInput.value||1,false);
+}
+
+function exportAllBackup(){
+  return {
+    version:"1.6.1",
+    exportedAt:new Date().toISOString(),
+    foods:DATA.foods,
+    combos:DATA.combos,
+    favorites:DATA.favorites,
+    usageStats:DATA.usageStats,
+    servings:DATA.servings,
+    prompts:DATA.prompts,
+    settings:DATA.settings,
+    logs:Object.entries(DATA.entries||{}).sort(([a],[b])=>a.localeCompare(b)).map(([date,food])=>({date,food}))
+  };
+}
+function renderHistory(){
+  if(!document.getElementById("historyList")) return;
+  const dates=Object.keys(DATA.entries||{}).filter(d=>(DATA.entries[d]||[]).length).sort().reverse();
+  historyList.innerHTML=dates.length?dates.map(d=>{
+    const count=(DATA.entries[d]||[]).length;
+    return `<div class="group open"><button class="grouphead" data-history-date="${d}"><span><b>${d}</b><small>${count} 筆飲食紀錄</small></span><span>查看</span></button></div>`;
+  }).join(""):`<div class="note">目前還沒有歷史紀錄。</div>`;
+}
+
+load(); renderAll();
+</script>
+</body>
+</html>
