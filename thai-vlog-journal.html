@@ -109,7 +109,7 @@ function load(){const raw=localStorage.getItem(STORAGE_KEY);if(raw){try{data=JSO
 function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(data));updateBadges()}
 function uid(){return Date.now().toString()+Math.random().toString(36).slice(2)}
 function normEntry(e){
-  e.id=e.id||uid(); e.date=e.date||today(); e.title=e.title||'Untitled Vlog';
+  e.id=e.id||uid(); e.date=e.date||today(); e.title=e.title||'Untitled Vlog'; e.content_updated_at=e.content_updated_at||null;
   e.mood=Array.isArray(e.mood)?e.mood:(e.mood?String(e.mood).split(',').map(x=>x.trim()).filter(Boolean):[]);
   e.tags=Array.isArray(e.tags)?e.tags:(e.tags?String(e.tags).split(',').map(x=>x.trim()).filter(Boolean):[]);
   e.sentences=(e.sentences||[]).map((s,i)=>({id:s.id||uid(),thai:s.thai||'',roman:s.roman||'',english:s.english||s.eng||'',chinese:s.chinese||s.zh||'',type:s.type||'vlog',key:!!s.key,favorite:!!s.favorite,favorite_updated_at:s.favorite_updated_at||null,interval:s.interval||1,ease:s.ease||2.5,next_review:s.next_review||today(),last_review:s.last_review||null,review_count:s.review_count||0,vocab:Array.isArray(s.vocab)?s.vocab:[]}));
@@ -287,7 +287,7 @@ function rateItem(eid,sid,r){const e=data.entries.find(x=>x.id===eid);if(!e)retu
 function toggleSentFav(eid,sid){const e=data.entries.find(x=>x.id===eid);if(!e)return;const s=e.sentences.concat(e.key_sentences).find(x=>x.id===sid);if(!s)return;s.favorite=!s.favorite;s.favorite_updated_at=new Date().toISOString();save();renderJournal();renderKeys();renderFavs()}
 function playEntry(eid,btn){const e=data.entries.find(x=>x.id===eid);if(!e)return;const lines=e.sentences.map(s=>s.thai);speakQueue(lines,btn,600)}
 function deleteEntry(eid){if(!confirm('確定刪除這篇 Vlog？'))return;data.entries=data.entries.filter(e=>e.id!==eid);save();renderJournal()}
-function addVlogFromForm(){let raw=document.getElementById('f-json').value.trim();let e;if(raw){try{e=JSON.parse(raw)}catch(err){alert('JSON 格式錯誤');return}}else{e={date:document.getElementById('f-date').value||today(),title:document.getElementById('f-title').value||'Untitled Vlog',mood:document.getElementById('f-mood').value,tags:document.getElementById('f-tags').value,sentences:[]}}; e.date=e.date||document.getElementById('f-date').value||today();e.title=e.title||document.getElementById('f-title').value||'Untitled Vlog';if(!e.mood)e.mood=document.getElementById('f-mood').value;if(!e.tags)e.tags=document.getElementById('f-tags').value;data.entries.unshift(normEntry(e));save();document.getElementById('f-json').value='';renderJournal()}
+function addVlogFromForm(){let raw=document.getElementById('f-json').value.trim();let e;if(raw){try{e=JSON.parse(raw)}catch(err){alert('JSON 格式錯誤');return}}else{e={date:document.getElementById('f-date').value||today(),title:document.getElementById('f-title').value||'Untitled Vlog',mood:document.getElementById('f-mood').value,tags:document.getElementById('f-tags').value,sentences:[]}}; e.date=e.date||document.getElementById('f-date').value||today();e.title=e.title||document.getElementById('f-title').value||'Untitled Vlog';if(!e.mood)e.mood=document.getElementById('f-mood').value;if(!e.tags)e.tags=document.getElementById('f-tags').value;e.content_updated_at=e.content_updated_at||new Date().toISOString();data.entries.unshift(normEntry(e));save();document.getElementById('f-json').value='';renderJournal()}
 function openPasteModal(){document.getElementById('paste-modal').style.display='flex';setTimeout(()=>document.getElementById('paste-input').focus(),50)}function closePasteModal(){document.getElementById('paste-modal').style.display='none';document.getElementById('paste-input').value='';document.getElementById('paste-error').style.display='none'}
 function parseEntriesPayload(raw){
   let parsed=typeof raw==='string'?JSON.parse(raw):raw;
@@ -352,8 +352,47 @@ function mergeSentenceList(localList, incomingList){
   });
 }
 
+function copyReviewAndFavoriteState(targetEntry, sourceEntry){
+  const mapState=(list=[])=>new Map(list.map(s=>[s.id,{
+    favorite:s.favorite,
+    favorite_updated_at:s.favorite_updated_at,
+    interval:s.interval,
+    ease:s.ease,
+    next_review:s.next_review,
+    last_review:s.last_review,
+    review_count:s.review_count
+  }]));
+
+  const localSentState=mapState(sourceEntry.sentences);
+  const localKeyState=mapState(sourceEntry.key_sentences);
+
+  function applyState(list=[], stateMap){
+    list.forEach(s=>{
+      const old=stateMap.get(s.id);
+      if(!old)return;
+
+      // Review progress: keep the higher review_count.
+      if((old.review_count||0)>(s.review_count||0)){
+        s.interval=old.interval;
+        s.ease=old.ease;
+        s.next_review=old.next_review;
+        s.last_review=old.last_review;
+        s.review_count=old.review_count;
+      }
+
+      // Favorite state: newer timestamp wins; old data preserves any favorite.
+      mergeFavoriteState(s, old);
+    });
+  }
+
+  applyState(targetEntry.sentences, localSentState);
+  applyState(targetEntry.key_sentences, localKeyState);
+}
+
 function mergeEntry(incoming){
   if(!incoming.id){incoming.id=uid();}
+  incoming.content_updated_at=incoming.content_updated_at||null;
+
   const local=data.entries.find(e=>e.id===incoming.id);
   if(!local){
     data.entries.unshift(incoming);
@@ -362,19 +401,32 @@ function mergeEntry(incoming){
 
   const incomingScore=reviewScoreOfEntry(incoming);
   const localScore=reviewScoreOfEntry(local);
+  const incomingContentTime=incoming.content_updated_at||'';
+  const localContentTime=local.content_updated_at||'';
 
-  // Update entry-level metadata; keep id stable.
-  ['date','title','summary','notes'].forEach(k=>{
-    if(incoming[k]!==undefined) local[k]=incoming[k];
-  });
-  local.mood=incoming.mood||local.mood||[];
-  local.tags=incoming.tags||local.tags||[];
-  local.vocab=incoming.vocab||local.vocab||[];
-  local.patterns=incoming.patterns||local.patterns||[];
-  local.collocations=incoming.collocations||local.collocations||[];
+  // If imported entry has newer edited content, update entry content,
+  // while preserving newer local review/favorite state.
+  if(incomingContentTime && (!localContentTime || incomingContentTime>localContentTime)){
+    const localSnapshot=JSON.parse(JSON.stringify(local));
+    Object.assign(local,incoming);
+    copyReviewAndFavoriteState(local, localSnapshot);
+    local.content_updated_at=incomingContentTime;
+    return 'content-updated';
+  }
 
+  // Otherwise keep local content, but still merge review progress and favorites.
   mergeSentenceList(local.sentences, incoming.sentences);
   mergeSentenceList(local.key_sentences, incoming.key_sentences);
+
+  // Metadata from old files without content_updated_at is only used to fill blanks.
+  ['date','title','summary','notes'].forEach(k=>{
+    if((local[k]===undefined||local[k]==='') && incoming[k]!==undefined) local[k]=incoming[k];
+  });
+  if((!local.mood||!local.mood.length) && incoming.mood) local.mood=incoming.mood;
+  if((!local.tags||!local.tags.length) && incoming.tags) local.tags=incoming.tags;
+  if((!local.vocab||!local.vocab.length) && incoming.vocab) local.vocab=incoming.vocab;
+  if((!local.patterns||!local.patterns.length) && incoming.patterns) local.patterns=incoming.patterns;
+  if((!local.collocations||!local.collocations.length) && incoming.collocations) local.collocations=incoming.collocations;
 
   return incomingScore>localScore?'updated':'merged';
 }
@@ -384,7 +436,7 @@ function mergeEntries(arr){
   arr.forEach(e=>{
     const result=mergeEntry(e);
     if(result==='added') added++;
-    else if(result==='updated') updated++;
+    else if(result==='updated'||result==='content-updated') updated++;
     else merged++;
   });
   return {added,updated,merged};
@@ -478,6 +530,7 @@ function saveEditEntry(){
   const err=document.getElementById('edit-error');
   try{
     const edited=normEntry(JSON.parse(document.getElementById('edit-input').value));
+    edited.content_updated_at=new Date().toISOString();
     if(editingEntryId && edited.id!==editingEntryId){
       edited.id=editingEntryId;
     }
