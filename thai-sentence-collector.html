@@ -232,6 +232,41 @@
   .edit-btn:hover { color: var(--accent2); border-color: #c0ddd8; }
 
 
+  /* ── Batch management ── */
+  .batch-toolbar {
+    background: #fffaf5;
+    border: 1px solid #ecc9b3;
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin: -12px 0 18px;
+    box-shadow: var(--shadow);
+  }
+  .batch-toolbar-top {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 12px; flex-wrap: wrap;
+  }
+  .batch-title { font-size: 13px; font-weight: 600; }
+  .batch-summary { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .batch-actions { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
+  .batch-select-control {
+    border: 1px solid var(--line); border-radius: 6px; background: var(--card);
+    padding: 5px 8px; font-family: inherit; font-size: 11.5px; color: var(--text);
+  }
+  .btn-danger {
+    border: 1px solid #efb4b4; background: #fff7f7; color: #c44;
+    border-radius: 6px; padding: 5px 10px; font-size: 11.5px;
+    cursor: pointer; font-family: inherit; transition: all .15s;
+  }
+  .btn-danger:hover { background: #fff0f0; border-color: #d77; }
+  .batch-hint { font-size: 11px; color: var(--muted); margin-top: 9px; line-height: 1.5; }
+  .batch-check {
+    width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--line); border-radius: 99px; cursor: pointer;
+    background: var(--card); color: var(--accent);
+  }
+  .batch-check input { width: 14px; height: 14px; cursor: pointer; accent-color: var(--accent); }
+  .sentence-card.batch-selected { border-color: #dda17b; box-shadow: 0 0 0 2px rgba(200,98,42,.1), var(--shadow); }
+
   /* review rating on cards */
   .review-info { font-size: 10.5px; color: var(--muted); margin-top: 6px; }
   .review-info .next { color: var(--accent2); }
@@ -323,6 +358,7 @@
   </div>
   <div class="header-actions">
     <button class="btn-sm" onclick="openPasteModal()">貼上 JSON</button>
+    <button class="btn-sm" id="batch-mode-btn" onclick="toggleBatchMode()">批次管理</button>
     <button class="btn-sm" onclick="exportData()">匯出</button>
     <button class="btn-sm" onclick="document.getElementById('import-file').click()">匯入</button>
     <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
@@ -367,6 +403,23 @@
       </div>
     </div>
     <button class="btn-add" onclick="addSentence()">加入收藏</button>
+  </div>
+
+  <div id="batch-toolbar" class="batch-toolbar" style="display:none">
+    <div class="batch-toolbar-top">
+      <div>
+        <div class="batch-title">批次管理</div>
+        <div class="batch-summary" id="batch-selection-summary">尚未選取句子</div>
+      </div>
+      <div class="batch-actions">
+        <select id="batch-date-filter" class="batch-select-control" onchange="setBatchDateFilter(this.value)"></select>
+        <button class="btn-sm" onclick="toggleSelectVisible()">全選目前顯示</button>
+        <button class="btn-sm" onclick="clearBatchSelection()">清除選取</button>
+        <button class="btn-sm" onclick="openBatchUpdateModal()">批次覆蓋 JSON</button>
+        <button class="btn-danger" onclick="batchDeleteSelected()">刪除已選</button>
+      </div>
+    </div>
+    <div class="batch-hint">「批次覆蓋 JSON」只會更新已存在的句子，保留原本 ID、複習進度與最愛狀態；找不到或比對不唯一的句子不會被新增。</div>
   </div>
 
   <div id="collection-list"></div>
@@ -543,16 +596,100 @@ function addSentence() {
 }
 
 // ── Render Collection ─────────────────────────────────────
+let batchMode = false;
+let batchDateFilter = '';
+let batchSelectedIds = new Set();
+
+function getBatchVisibleSentences() {
+  return data.sentences.filter(s => !batchDateFilter || s.date === batchDateFilter);
+}
+
+function renderBatchToolbar() {
+  const toolbar = document.getElementById('batch-toolbar');
+  const button = document.getElementById('batch-mode-btn');
+  if (!toolbar || !button) return;
+
+  toolbar.style.display = batchMode ? 'block' : 'none';
+  button.textContent = batchMode ? '結束管理' : '批次管理';
+  button.style.borderColor = batchMode ? 'var(--accent)' : '';
+  button.style.color = batchMode ? 'var(--accent)' : '';
+  if (!batchMode) return;
+
+  const select = document.getElementById('batch-date-filter');
+  const dates = [...new Set(data.sentences.map(s => s.date || '').filter(Boolean))].sort((a, b) => b.localeCompare(a));
+  if (batchDateFilter && !dates.includes(batchDateFilter)) batchDateFilter = '';
+  select.innerHTML = `<option value="">全部日期（${data.sentences.length}）</option>` + dates.map(date => {
+    const count = data.sentences.filter(s => s.date === date).length;
+    return `<option value="${date}">${date}（${count}）</option>`;
+  }).join('');
+  select.value = batchDateFilter;
+
+  const visibleIds = new Set(getBatchVisibleSentences().map(s => s.id));
+  const selectedVisible = [...batchSelectedIds].filter(id => visibleIds.has(id)).length;
+  const totalSelected = batchSelectedIds.size;
+  document.getElementById('batch-selection-summary').textContent =
+    totalSelected ? `已選 ${totalSelected} 句（目前顯示範圍：${selectedVisible} 句）` : '尚未選取句子';
+}
+
+function toggleBatchMode() {
+  if (!document.getElementById('page-0').classList.contains('active')) showPage(0);
+  batchMode = !batchMode;
+  if (!batchMode) {
+    batchSelectedIds.clear();
+    batchDateFilter = '';
+  }
+  renderCollection();
+}
+
+function setBatchDateFilter(value) {
+  batchDateFilter = value;
+  renderCollection();
+}
+
+function toggleBatchSelect(id, checked) {
+  if (checked) batchSelectedIds.add(id);
+  else batchSelectedIds.delete(id);
+  renderCollection();
+}
+
+function toggleSelectVisible() {
+  const visible = getBatchVisibleSentences();
+  const allVisibleSelected = visible.length > 0 && visible.every(s => batchSelectedIds.has(s.id));
+  visible.forEach(s => allVisibleSelected ? batchSelectedIds.delete(s.id) : batchSelectedIds.add(s.id));
+  renderCollection();
+}
+
+function clearBatchSelection() {
+  batchSelectedIds.clear();
+  renderCollection();
+}
+
+function batchDeleteSelected() {
+  const count = batchSelectedIds.size;
+  if (!count) { alert('請先勾選要刪除的句子。'); return; }
+  if (!confirm(`確定要刪除已選的 ${count} 句嗎？這會一併刪除它們的複習紀錄，無法復原。`)) return;
+  data.sentences = data.sentences.filter(s => !batchSelectedIds.has(s.id));
+  batchSelectedIds.clear();
+  save();
+  renderCollection();
+  renderFavorites();
+  renderReview();
+}
+
 function renderCollection() {
   const list = document.getElementById('collection-list');
-  if (!data.sentences.length) {
-    list.innerHTML = '<div class="empty-state"><div class="big">📖</div>還沒有收藏的句子，新增第一句吧！</div>';
+  renderBatchToolbar();
+  const sentencesToRender = batchMode ? getBatchVisibleSentences() : data.sentences;
+  if (!sentencesToRender.length) {
+    const empty = data.sentences.length
+      ? '這個日期篩選目前沒有句子。'
+      : '還沒有收藏的句子，新增第一句吧！';
+    list.innerHTML = `<div class="empty-state"><div class="big">📖</div>${empty}</div>`;
     return;
   }
 
-  // Group by date
   const groups = {};
-  data.sentences.forEach(s => {
+  sentencesToRender.forEach(s => {
     if (!groups[s.date]) groups[s.date] = [];
     groups[s.date].push(s);
   });
@@ -568,8 +705,13 @@ function renderCollection() {
 
 function sentenceCard(s, showReviewInfo = false) {
   const nextInfo = s.next_review ? `下次複習：${s.next_review}｜間隔 ${s.interval} 天` : '';
+  const selectedClass = batchMode && batchSelectedIds.has(s.id) ? ' batch-selected' : '';
+  const batchCheck = batchMode && !showReviewInfo ? `
+      <label class="batch-check" title="選取這句">
+        <input type="checkbox" ${batchSelectedIds.has(s.id) ? 'checked' : ''} onchange="toggleBatchSelect('${s.id}', this.checked)">
+      </label>` : '';
   return `
-  <div class="sentence-card" id="card-${s.id}">
+  <div class="sentence-card${selectedClass}" id="card-${s.id}">
     <div class="sentence-main">
       <div class="sentence-thai">${s.thai}</div>
       ${s.roman ? `<div class="sentence-roman">${s.roman}</div>` : ''}
@@ -588,6 +730,7 @@ function sentenceCard(s, showReviewInfo = false) {
       ${showReviewInfo && nextInfo ? `<div class="review-info"><span class="next">${nextInfo}</span>　複習 ${s.review_count} 次</div>` : ''}
     </div>
     <div class="card-actions">
+      ${batchCheck}
       <button class="tts-btn" onclick="speak('${s.thai}', this)" title="播放">🔊</button>
       <button class="fav-btn ${s.favorite ? 'active' : ''}" onclick="toggleFav('${s.id}')" title="最愛">♥</button>
       <button class="edit-btn" onclick="openEditModal('${s.id}')" title="編輯">✏️</button>
@@ -835,6 +978,112 @@ document.addEventListener('click', function(e) {
 });
 
 
+function openBatchUpdateModal() {
+  const scopeCount = batchSelectedIds.size || getBatchVisibleSentences().length;
+  if (!scopeCount) { alert('目前範圍內沒有可更新的句子。'); return; }
+  const modeText = batchSelectedIds.size
+    ? `目前會只在已選的 ${batchSelectedIds.size} 句中比對。`
+    : (batchDateFilter ? `目前會只在 ${batchDateFilter} 的句子中比對。` : '目前會在全部句子中比對。');
+  document.getElementById('batch-update-scope').textContent = modeText;
+  document.getElementById('batch-update-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('batch-update-input').focus(), 50);
+}
+
+function closeBatchUpdateModal() {
+  document.getElementById('batch-update-modal').style.display = 'none';
+  document.getElementById('batch-update-input').value = '';
+  document.getElementById('batch-update-error').style.display = 'none';
+}
+
+function normalizeMatchText(value) {
+  return String(value || '').trim().replace(/\s+/g, ' ');
+}
+
+function updateSentenceContentKeepProgress(target, incoming) {
+  ['date', 'thai', 'roman', 'chinese', 'notes'].forEach(key => {
+    if (Object.prototype.hasOwnProperty.call(incoming, key)) {
+      target[key] = typeof incoming[key] === 'string' ? incoming[key].trim() : (incoming[key] || '');
+    }
+  });
+  if (Array.isArray(incoming.vocab)) {
+    target.vocab = incoming.vocab
+      .filter(v => v && v.thai)
+      .map(v => ({ thai: String(v.thai).trim(), eng: String(v.eng || '').trim() }));
+  }
+}
+
+function batchUpdateImport() {
+  const raw = document.getElementById('batch-update-input').value.trim();
+  const errorEl = document.getElementById('batch-update-error');
+  errorEl.style.display = 'none';
+  try {
+    let parsed = JSON.parse(raw);
+    if (parsed && Array.isArray(parsed.sentences)) parsed = parsed.sentences;
+    if (!Array.isArray(parsed)) parsed = [parsed];
+
+    const scope = batchSelectedIds.size
+      ? data.sentences.filter(s => batchSelectedIds.has(s.id))
+      : getBatchVisibleSentences();
+    const byId = new Map(scope.map(s => [s.id, s]));
+    const byKey = new Map();
+    scope.forEach(s => {
+      const key = `${normalizeMatchText(s.date)}\u0000${normalizeMatchText(s.thai)}`;
+      if (!byKey.has(key)) byKey.set(key, []);
+      byKey.get(key).push(s);
+    });
+
+    const plannedUpdates = [];
+    const plannedTargetIds = new Set();
+    const unmatched = [];
+    const ambiguous = [];
+    const invalid = [];
+
+    parsed.forEach(incoming => {
+      if (!incoming || !incoming.thai) { invalid.push('缺少 thai'); return; }
+      let target = incoming.id ? byId.get(incoming.id) : null;
+      if (!target) {
+        const date = incoming.date || batchDateFilter;
+        if (!date) { invalid.push(`${incoming.thai}（缺少 date）`); return; }
+        const key = `${normalizeMatchText(date)}\u0000${normalizeMatchText(incoming.thai)}`;
+        const matches = byKey.get(key) || [];
+        if (matches.length === 1) target = matches[0];
+        else if (matches.length > 1) { ambiguous.push(incoming.thai); return; }
+        else { unmatched.push(incoming.thai); return; }
+      }
+      if (plannedTargetIds.has(target.id)) {
+        invalid.push(`${incoming.thai}（JSON 內重複提供同一句）`);
+        return;
+      }
+      plannedTargetIds.add(target.id);
+      plannedUpdates.push({ target, incoming });
+    });
+
+    const updated = plannedUpdates.length;
+    const skipped = unmatched.length + ambiguous.length + invalid.length;
+    const details = [];
+    if (unmatched.length) details.push(`找不到 ${unmatched.length} 句`);
+    if (ambiguous.length) details.push(`重複而無法安全比對 ${ambiguous.length} 句`);
+    if (invalid.length) details.push(`格式不足 ${invalid.length} 筆`);
+    if (!updated) {
+      errorEl.textContent = `沒有任何句子被更新。${details.join('；')}。`; 
+      errorEl.style.display = 'block';
+      return;
+    }
+    if (!confirm(`將更新 ${updated} 句的文字、拼音、翻譯、vocab 與 notes；複習紀錄、最愛與 ID 會保留。${skipped ? `另有 ${skipped} 筆略過（${details.join('；')}）。` : ''}`)) return;
+    plannedUpdates.forEach(({ target, incoming }) => updateSentenceContentKeepProgress(target, incoming));
+    save();
+    renderCollection();
+    renderFavorites();
+    renderReview();
+    closeBatchUpdateModal();
+    alert(`✅ 已安全更新 ${updated} 句${skipped ? `；略過 ${skipped} 筆。` : '。'}`);
+  } catch (e) {
+    errorEl.textContent = '格式錯誤，請貼上正確的 JSON array，或含有 sentences 的匯出 JSON。';
+    errorEl.style.display = 'block';
+  }
+}
+
+
 let editVocab = [];
 
 function openEditModal(id) {
@@ -893,6 +1142,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('edit-modal').addEventListener('click', function(e) {
     if (e.target === this) closeEditModal();
   });
+  document.getElementById('batch-update-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeBatchUpdateModal();
+  });
 });
 
 function saveEdit() {
@@ -933,7 +1185,8 @@ updateBadges();
       <div style="font-weight:600;font-size:14px">貼上 AI 整理的 JSON</div>
       <button onclick="closePasteModal()" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--muted)">×</button>
     </div>
-    <textarea id="paste-input" rows="10" style="width:100%;border:1px solid var(--line);border-radius:7px;padding:10px;font-family:'JetBrains Mono',monospace;font-size:12px;resize:vertical;background:var(--bg);color:var(--text)" placeholder="貼上 JSON array..."></textarea>
+    <div style="font-size:11.5px;color:var(--muted);line-height:1.5;margin:-2px 0 9px">這裡只用於新增句子。若要修改既有卡片，請使用「批次管理 → 批次覆蓋 JSON」，才能保留複習紀錄。</div>
+    <textarea id="paste-input" rows="10" style="width:100%;border:1px solid var(--line);border-radius:7px;padding:10px;font-family:'JetBrains Mono',monospace;font-size:12px;resize:vertical;background:var(--bg);color:var(--text)" placeholder="貼上新的 JSON array..."></textarea>
     <div id="paste-error" style="color:#e05;font-size:12px;margin-top:6px;display:none"></div>
     <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">
       <button onclick="closePasteModal()" class="btn-sm">取消</button>
@@ -942,6 +1195,25 @@ updateBadges();
   </div>
 </div>
 
+
+<div id="batch-update-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:215;align-items:center;justify-content:center;padding:18px">
+  <div style="background:var(--card);border-radius:12px;padding:24px;width:min(680px,94vw);max-height:88vh;overflow:auto;box-shadow:0 8px 32px rgba(0,0,0,.15);border:1px solid var(--line)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:12px">
+      <div>
+        <div style="font-weight:600;font-size:15px">批次覆蓋既有句子</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:3px" id="batch-update-scope"></div>
+      </div>
+      <button onclick="closeBatchUpdateModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--muted);line-height:1">×</button>
+    </div>
+    <div style="font-size:11.5px;color:var(--muted);line-height:1.55;margin-bottom:10px">請貼上 AI 回傳的 JSON array。系統會先用 <strong>id</strong>（若有），否則用「<strong>date + thai</strong>」找原本的卡片；只更新內容，不會新增任何句子。若你改了泰文原句本身，請保留原本 id，或改用單句編輯。</div>
+    <textarea id="batch-update-input" rows="14" style="width:100%;border:1px solid var(--line);border-radius:7px;padding:10px;font-family:'JetBrains Mono',monospace;font-size:12px;resize:vertical;background:var(--bg);color:var(--text)" placeholder="貼上要覆蓋的 JSON array..."></textarea>
+    <div id="batch-update-error" style="color:#e05;font-size:12px;margin-top:6px;display:none"></div>
+    <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">
+      <button onclick="closeBatchUpdateModal()" class="btn-sm">取消</button>
+      <button onclick="batchUpdateImport()" class="btn-add" style="margin-top:0">安全覆蓋</button>
+    </div>
+  </div>
+</div>
 
 <div id="edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:220;align-items:center;justify-content:center;padding:18px">
   <div style="background:var(--card);border-radius:12px;padding:24px;width:min(720px,94vw);max-height:88vh;overflow:auto;box-shadow:0 8px 32px rgba(0,0,0,.15);border:1px solid var(--line)">
