@@ -23,6 +23,15 @@ header{background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border-bottom
 .collapsible-panel.open .collapse-body{display:block}
 .collapsible-panel.open .arrow{transform:rotate(180deg)}
 .arrow{transition:transform .15s ease;color:var(--muted)}
+
+/* Persistent Journal / Analysis navigation */
+.context-nav{display:none;position:sticky;top:var(--journal-header-height,0px);z-index:90;background:rgba(250,248,244,.97);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.context-nav.visible{display:block}
+.context-nav-inner{max-width:1180px;margin:0 auto;padding:10px 24px 0}
+.journal-toolbar,.analysis-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:10px 12px;margin:0 0 10px}
+.journal-toolbar-main,.analysis-toolbar-main{display:flex;align-items:center;gap:8px;min-width:0;flex:1}.journal-toolbar-label,.analysis-toolbar-label{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap}.journal-date-select,.analysis-date-select{min-width:215px;max-width:100%;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--text);padding:7px 30px 7px 9px;font-size:12px;cursor:pointer}.journal-date-select:focus,.analysis-date-select:focus{outline:none;border-color:var(--accent)}.journal-toolbar-actions,.analysis-toolbar-actions{display:flex;gap:6px;flex-wrap:wrap}
+#journal-list .journal-card{padding:0;overflow:hidden;scroll-margin-top:calc(var(--journal-header-height,72px) + var(--journal-toolbar-height,56px) + 24px)}#journal-list .journal-head{padding:14px 16px;margin:0;border-bottom:none;align-items:stretch}#journal-list .journal-summary{appearance:none;border:none;background:none;color:inherit;min-width:0;flex:1;display:block;text-align:left;cursor:pointer;padding:0;font:inherit}#journal-list .journal-summary:focus-visible,#analysis-list .analysis-summary:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:6px}#journal-list .journal-summary-row,#analysis-list .analysis-summary-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}#journal-list .journal-chevron,#analysis-list .analysis-chevron{font-size:16px;color:var(--muted);line-height:1.3;transition:transform .15s ease;flex:none;padding-top:2px}#journal-list .journal-card.open .journal-head{border-bottom:1px solid var(--line);margin-bottom:0}#journal-list .journal-card.open .journal-chevron{transform:rotate(180deg)}#journal-list .journal-card-body{display:none;padding:0 16px 16px}#journal-list .journal-card.open .journal-card-body{display:block}#journal-list .journal-card .actions{flex:none;align-self:flex-start}
+#analysis-list .journal-card{padding:0;overflow:hidden;scroll-margin-top:calc(var(--journal-header-height,72px) + var(--analysis-toolbar-height,56px) + 24px)}#analysis-list .analysis-head{padding:14px 16px;margin:0;border-bottom:none}#analysis-list .analysis-summary{appearance:none;border:none;background:none;color:inherit;width:100%;display:block;text-align:left;cursor:pointer;padding:0;font:inherit}#analysis-list .journal-card.open .analysis-head{border-bottom:1px solid var(--line)}#analysis-list .journal-card.open .analysis-chevron{transform:rotate(180deg)}#analysis-list .analysis-card-body{display:none;padding:0 16px 16px}#analysis-list .journal-card.open .analysis-card-body{display:block}
 .journal-card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:18px;margin-bottom:16px}.journal-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px}.journal-title{font-size:18px;font-weight:700}.date{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:12px;margin-bottom:3px}.meta{color:var(--muted);font-size:12.5px}.tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.tag{background:var(--tag-bg);border:1px solid var(--line);border-radius:99px;padding:3px 9px;font-size:11.5px;color:var(--muted)}.tag.mood{background:var(--purple);color:var(--accent3)}.actions{display:flex;gap:6px;align-items:center}.round{background:#fff;border:1px solid var(--line);border-radius:99px;width:32px;height:32px;cursor:pointer;color:var(--muted)}.round:hover{border-color:var(--accent2);color:var(--accent2)}.round.active{border-color:var(--accent3);color:var(--accent3);background:var(--purple)}
 .sentence-list{display:grid;gap:8px}.sent{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;background:#fffdf9;border:1px solid var(--line);border-radius:10px;padding:10px}.sent-num{font-family:'JetBrains Mono',monospace;color:var(--muted);font-size:11px;padding-top:4px}.sent-thai{font-family:'Noto Sans Thai',sans-serif;font-size:16px;font-weight:500}.sent-roman{font-family:'JetBrains Mono',monospace;font-size:12px;color:#9a8878}.sent-en,.sent-zh{font-size:12.5px;color:var(--muted)}
 .sent-vocab{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
@@ -36,7 +45,7 @@ header{background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border-bottom
 .review-item{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}.rating-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.rating-btn{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:7px 12px;cursor:pointer;font-size:12px}.r0{border-color:#f0a0a0}.r1{border-color:#f0c070}.r2{border-color:#a0c8a0}.r3{border-color:#a0c0e0}
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:300;align-items:center;justify-content:center;padding:18px}.modal-card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.18);width:min(760px,94vw);max-height:88vh;overflow:auto;padding:22px}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.x{background:none;border:none;font-size:22px;color:var(--muted);cursor:pointer}
 #tts-warning{position:fixed;right:18px;bottom:18px;background:#333;color:#fff;border-radius:8px;padding:10px 14px;font-size:12px;display:none;z-index:999}
-@media(max-width:760px){.page{padding:16px}.grid2,.grid3{grid-template-columns:1fr}.journal-head{flex-direction:column}.sent{grid-template-columns:1fr auto}.sent-num{display:none}header{align-items:flex-start}}
+@media(max-width:760px){.page{padding:16px}.context-nav-inner{padding:8px 16px 0}.grid2,.grid3{grid-template-columns:1fr}.journal-head{flex-direction:column}.sent{grid-template-columns:1fr auto}.sent-num{display:none}header{align-items:flex-start}.journal-toolbar-main,.analysis-toolbar-main{width:100%}.journal-date-select,.analysis-date-select{flex:1;min-width:0}.journal-toolbar-actions,.analysis-toolbar-actions{width:100%}.journal-toolbar-actions .btn-sm,.analysis-toolbar-actions .btn-sm{flex:1}}
 </style>
 </head>
 <body>
@@ -56,6 +65,40 @@ header{background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border-bottom
     <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
   </div>
 </header>
+
+<div class="context-nav visible" id="journal-context-nav" aria-hidden="false">
+  <div class="context-nav-inner">
+    <div class="journal-toolbar" id="journal-toolbar">
+      <div class="journal-toolbar-main">
+        <span class="journal-toolbar-label">瀏覽日記</span>
+        <select id="journal-date-select" class="journal-date-select" onchange="jumpToJournalDate(this.value)" aria-label="選擇日期跳至日記">
+          <option value="">選擇日期跳至該日</option>
+        </select>
+      </div>
+      <div class="journal-toolbar-actions">
+        <button class="btn-sm" onclick="collapseAllJournalEntries()">全部收合</button>
+        <button class="btn-sm" onclick="expandLatestJournal()">展開最新</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="context-nav" id="analysis-context-nav" aria-hidden="true">
+  <div class="context-nav-inner">
+    <div class="analysis-toolbar" id="analysis-toolbar">
+      <div class="analysis-toolbar-main">
+        <span class="analysis-toolbar-label">瀏覽 Vocab / Patterns</span>
+        <select id="analysis-date-select" class="analysis-date-select" onchange="jumpToAnalysisDate(this.value)" aria-label="選擇日期跳至 Vocab 與 Patterns">
+          <option value="">選擇日期跳至該日</option>
+        </select>
+      </div>
+      <div class="analysis-toolbar-actions">
+        <button class="btn-sm" onclick="collapseAllAnalysisEntries()">全部收合</button>
+        <button class="btn-sm" onclick="expandLatestAnalysis()">展開最新</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="page active" id="page-0">
   <div class="collapsible-panel" id="quick-add-panel">
@@ -120,8 +163,126 @@ function normEntry(e){
 function allReviewItems(){let arr=[];data.entries.forEach(e=>{e.key_sentences.forEach(s=>arr.push({entry:e,item:s,kind:'key'}));e.sentences.filter(s=>s.favorite||s.key).forEach(s=>arr.push({entry:e,item:s,kind:'sent'}));});return arr}
 function isDue(s){return !s.next_review||s.next_review<=today()}
 function sm2(s,r){const now=new Date();if(r===0){s.interval=1;s.ease=Math.max(1.3,(s.ease||2.5)-.3)}else if(r===1){s.interval=1;s.ease=Math.max(1.3,(s.ease||2.5)-.15)}else if(r===2){s.interval=s.interval<=1?3:Math.round(s.interval*(s.ease||2.5))}else{s.interval=s.interval<=1?4:Math.round(s.interval*(s.ease||2.5));s.ease=Math.min(3,(s.ease||2.5)+.1)}s.last_review=today();let n=new Date();n.setDate(n.getDate()+s.interval);s.next_review=n.toISOString().slice(0,10);s.review_count=(s.review_count||0)+1}
-function showPage(n){document.querySelectorAll('.page').forEach((p,i)=>p.classList.toggle('active',i===n));document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',i===n)); if(n===0)renderJournal(); if(n===1)renderKeys(); if(n===2)renderAnalysis(); if(n===3)renderFavs(); if(n===4)renderReview()}
+function setContextNavigation(n){
+  const journalNav=document.getElementById('journal-context-nav');
+  const analysisNav=document.getElementById('analysis-context-nav');
+  const journalVisible=n===0;
+  const analysisVisible=n===2;
+  if(journalNav){journalNav.classList.toggle('visible',journalVisible);journalNav.setAttribute('aria-hidden',String(!journalVisible));}
+  if(analysisNav){analysisNav.classList.toggle('visible',analysisVisible);analysisNav.setAttribute('aria-hidden',String(!analysisVisible));}
+  requestAnimationFrame(syncJournalStickyOffset);
+}
+function showPage(n){document.querySelectorAll('.page').forEach((p,i)=>p.classList.toggle('active',i===n));document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',i===n));setContextNavigation(n); if(n===0)renderJournal(); if(n===1)renderKeys(); if(n===2)renderAnalysis(); if(n===3)renderFavs(); if(n===4)renderReview()}
 function toggleQuickAdd(){document.getElementById('quick-add-panel').classList.toggle('open')}
+
+let journalOpenEntries=new Set();
+let journalViewInitialized=false;
+let analysisOpenEntries=new Set();
+let analysisViewInitialized=false;
+
+function sortedJournalEntries(){return data.entries.slice().sort((a,b)=>b.date.localeCompare(a.date))}
+function hasAnalysisContent(e){return !!((e.vocab&&e.vocab.length)||(e.patterns&&e.patterns.length)||(e.collocations&&e.collocations.length));}
+function sortedAnalysisEntries(){return sortedJournalEntries().filter(hasAnalysisContent)}
+function syncJournalStickyOffset(){
+  const header=document.querySelector('header');
+  const journalToolbar=document.getElementById('journal-toolbar');
+  const analysisToolbar=document.getElementById('analysis-toolbar');
+  if(header)document.documentElement.style.setProperty('--journal-header-height',`${header.offsetHeight}px`);
+  if(journalToolbar)document.documentElement.style.setProperty('--journal-toolbar-height',`${journalToolbar.offsetHeight}px`);
+  if(analysisToolbar)document.documentElement.style.setProperty('--analysis-toolbar-height',`${analysisToolbar.offsetHeight}px`);
+}
+function toggleJournalEntry(eid,btn){
+  const card=document.getElementById(`journal-entry-${eid}`);
+  if(!card)return;
+  const isOpen=card.classList.toggle('open');
+  if(isOpen)journalOpenEntries.add(eid);else journalOpenEntries.delete(eid);
+  if(btn)btn.setAttribute('aria-expanded',String(isOpen));
+}
+function collapseAllJournalEntries(){
+  journalOpenEntries.clear();
+  journalViewInitialized=true;
+  document.querySelectorAll('#journal-list .journal-card.open').forEach(card=>card.classList.remove('open'));
+  document.querySelectorAll('#journal-list .journal-summary[aria-expanded="true"]').forEach(btn=>btn.setAttribute('aria-expanded','false'));
+}
+function expandLatestJournal(){
+  const latest=sortedJournalEntries()[0];
+  if(!latest)return;
+  journalOpenEntries.add(latest.id);
+  journalViewInitialized=true;
+  const card=document.getElementById(`journal-entry-${latest.id}`);
+  if(card){
+    card.classList.add('open');
+    const btn=card.querySelector('.journal-summary');
+    if(btn)btn.setAttribute('aria-expanded','true');
+    card.scrollIntoView({behavior:'smooth',block:'start'});
+  }else renderJournal();
+}
+function jumpToJournalDate(eid){
+  if(!eid)return;
+  journalOpenEntries.add(eid);
+  journalViewInitialized=true;
+  const card=document.getElementById(`journal-entry-${eid}`);
+  if(card){
+    card.classList.add('open');
+    const btn=card.querySelector('.journal-summary');
+    if(btn)btn.setAttribute('aria-expanded','true');
+    requestAnimationFrame(()=>card.scrollIntoView({behavior:'smooth',block:'start'}));
+  }
+  const select=document.getElementById('journal-date-select');
+  if(select)select.value='';
+}
+function renderJournalNavigation(entries){
+  const select=document.getElementById('journal-date-select');
+  if(!select)return;
+  select.innerHTML='<option value="">選擇日期跳至該日</option>'+entries.map(e=>`<option value="${esc(e.id)}">${esc(e.date)} · ${esc(e.title)}</option>`).join('');
+}
+function toggleAnalysisEntry(eid,btn){
+  const card=document.getElementById(`analysis-entry-${eid}`);
+  if(!card)return;
+  const isOpen=card.classList.toggle('open');
+  if(isOpen)analysisOpenEntries.add(eid);else analysisOpenEntries.delete(eid);
+  if(btn)btn.setAttribute('aria-expanded',String(isOpen));
+}
+function collapseAllAnalysisEntries(){
+  analysisOpenEntries.clear();
+  analysisViewInitialized=true;
+  document.querySelectorAll('#analysis-list .journal-card.open').forEach(card=>card.classList.remove('open'));
+  document.querySelectorAll('#analysis-list .analysis-summary[aria-expanded="true"]').forEach(btn=>btn.setAttribute('aria-expanded','false'));
+}
+function expandLatestAnalysis(){
+  const latest=sortedAnalysisEntries()[0];
+  if(!latest)return;
+  analysisOpenEntries.add(latest.id);
+  analysisViewInitialized=true;
+  const card=document.getElementById(`analysis-entry-${latest.id}`);
+  if(card){
+    card.classList.add('open');
+    const btn=card.querySelector('.analysis-summary');
+    if(btn)btn.setAttribute('aria-expanded','true');
+    card.scrollIntoView({behavior:'smooth',block:'start'});
+  }else renderAnalysis();
+}
+function jumpToAnalysisDate(eid){
+  if(!eid)return;
+  analysisOpenEntries.add(eid);
+  analysisViewInitialized=true;
+  const card=document.getElementById(`analysis-entry-${eid}`);
+  if(card){
+    card.classList.add('open');
+    const btn=card.querySelector('.analysis-summary');
+    if(btn)btn.setAttribute('aria-expanded','true');
+    requestAnimationFrame(()=>card.scrollIntoView({behavior:'smooth',block:'start'}));
+  }
+  const select=document.getElementById('analysis-date-select');
+  if(select)select.value='';
+}
+function renderAnalysisNavigation(entries){
+  const select=document.getElementById('analysis-date-select');
+  if(!select)return;
+  select.innerHTML='<option value="">選擇日期跳至該日</option>'+entries.map(e=>`<option value="${esc(e.id)}">${esc(e.date)} · ${esc(e.title)}</option>`).join('');
+}
+window.addEventListener('resize',syncJournalStickyOffset);
+window.addEventListener('load',syncJournalStickyOffset);
 let ttsQueueTimer=null;
 let ttsActiveBtn=null;
 let ttsQueueToken=0;
@@ -266,7 +427,18 @@ function nextQueueLine(token){
 }
 
 function warn(){const w=document.getElementById('tts-warning');w.style.display='block';setTimeout(()=>w.style.display='none',3000)}
-function entryCard(e){return `<div class="journal-card"><div class="journal-head"><div><div class="date">${esc(e.date)}</div><div class="journal-title">${esc(e.title)}</div><div class="meta">${e.sentences.length} sentences｜${e.key_sentences.length} key sentences</div><div class="tag-row">${e.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}${e.mood.map(t=>`<span class="tag mood">${esc(t)}</span>`).join('')}</div></div><div class="actions"><button class="round" title="播放全文" onclick="playEntry('${e.id}',this)">🔊</button><button class="round" title="編輯 JSON" onclick="openEditModal('${e.id}')">✏️</button><button class="round" title="刪除" onclick="deleteEntry('${e.id}')">✕</button></div></div>${sentenceList(e.sentences,e.id)}${e.notes?`<div class="section-title">Notes</div><div class="note-box">${esc(e.notes)}</div>`:''}</div>`}
+function entryCard(e){
+  const isOpen=journalOpenEntries.has(e.id);
+  return `<div class="journal-card ${isOpen?'open':''}" id="journal-entry-${esc(e.id)}">
+    <div class="journal-head">
+      <button class="journal-summary" onclick="toggleJournalEntry('${js(e.id)}',this)" aria-expanded="${isOpen}">
+        <div class="journal-summary-row"><div><div class="date">${esc(e.date)}</div><div class="journal-title">${esc(e.title)}</div><div class="meta">${e.sentences.length} sentences｜${e.key_sentences.length} key sentences</div><div class="tag-row">${e.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}${e.mood.map(t=>`<span class="tag mood">${esc(t)}</span>`).join('')}</div></div><span class="journal-chevron" aria-hidden="true">⌄</span></div>
+      </button>
+      <div class="actions"><button class="round" title="播放全文" onclick="playEntry('${js(e.id)}',this)">🔊</button><button class="round" title="編輯 JSON" onclick="openEditModal('${js(e.id)}')">✏️</button><button class="round" title="刪除" onclick="deleteEntry('${js(e.id)}')">✕</button></div>
+    </div>
+    <div class="journal-card-body">${sentenceList(e.sentences,e.id)}${e.notes?`<div class="section-title">Notes</div><div class="note-box">${esc(e.notes)}</div>`:''}</div>
+  </div>`
+}
 function sentenceVocabHtml(s){
   if(!s.vocab || !Array.isArray(s.vocab) || !s.vocab.length)return '';
   return `<div class="sent-vocab">${s.vocab.map(v=>`
@@ -276,18 +448,62 @@ function sentenceVocabHtml(s){
     </span>
   `).join('')}</div>`;
 }
-function sentenceList(list,eid){if(!list.length)return '<div class="empty">沒有句子</div>';return `<div class="sentence-list">${list.map((s,i)=>`<div class="sent ${s.key?'key':''}"><div class="sent-num">${String(i+1).padStart(2,'0')}</div><div><div class="sent-thai">${esc(s.thai)}</div>${s.roman?`<div class="sent-roman">${esc(s.roman)}</div>`:''}${s.english?`<div class="sent-en">${esc(s.english)}</div>`:''}${s.chinese?`<div class="sent-zh">${esc(s.chinese)}</div>`:''}${sentenceVocabHtml(s)}</div><div class="actions"><button class="round" onclick="speak('${js(s.thai)}',this)">🔊</button><button class="round ${s.favorite?'active':''}" onclick="toggleSentFav('${eid}','${s.id}')">♥</button></div></div>`).join('')}</div>`}
-function renderJournal(){const el=document.getElementById('journal-list');if(!data.entries.length){el.innerHTML='<div class="empty"><div class="big">🎥</div>還沒有 Daily Vlog，先貼上第一篇 JSON 吧！</div>';return} el.innerHTML=data.entries.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(entryCard).join('')}
-function renderKeys(){let items=[];data.entries.forEach(e=>e.key_sentences.forEach(s=>items.push({e,s})));const el=document.getElementById('key-list');if(!items.length){el.innerHTML='<div class="empty"><div class="big">⭐</div>還沒有 Key Sentences</div>';return}el.innerHTML=items.map(({e,s})=>`<div class="journal-card"><div class="date">${esc(e.date)}｜${esc(e.title)}</div>${sentenceList([s],e.id)}</div>`).join('')}
-function renderAnalysis(){const el=document.getElementById('analysis-list');if(!data.entries.length){el.innerHTML='<div class="empty"><div class="big">🧩</div>還沒有可分析內容</div>';return} el.innerHTML=data.entries.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(e=>`<div class="journal-card"><div class="date">${esc(e.date)}</div><div class="journal-title">${esc(e.title)}</div>${analysisSection('Vocabulary & Chunks',e.vocab)}${analysisSection('Patterns',e.patterns)}${analysisSection('Collocations',e.collocations)}</div>`).join('')}
+function sentenceList(list,eid){if(!list.length)return '<div class="empty">沒有句子</div>';return `<div class="sentence-list">${list.map((s,i)=>`<div class="sent ${s.key?'key':''}"><div class="sent-num">${String(i+1).padStart(2,'0')}</div><div><div class="sent-thai">${esc(s.thai)}</div>${s.roman?`<div class="sent-roman">${esc(s.roman)}</div>`:''}${s.english?`<div class="sent-en">${esc(s.english)}</div>`:''}${s.chinese?`<div class="sent-zh">${esc(s.chinese)}</div>`:''}${sentenceVocabHtml(s)}</div><div class="actions"><button class="round" onclick="speak('${js(s.thai)}',this)">🔊</button><button class="round ${s.favorite?'active':''}" onclick="toggleSentFav('${js(eid)}','${js(s.id)}')">♥</button></div></div>`).join('')}</div>`}
+function renderJournal(){
+  const el=document.getElementById('journal-list');
+  const entries=sortedJournalEntries();
+  renderJournalNavigation(entries);
+  if(!entries.length){el.innerHTML='<div class="empty"><div class="big">🎥</div>還沒有 Daily Vlog，先貼上第一篇 JSON 吧！</div>';return}
+  if(!journalViewInitialized){journalOpenEntries.clear();journalOpenEntries.add(entries[0].id);journalViewInitialized=true}
+  el.innerHTML=entries.map(entryCard).join('');
+  syncJournalStickyOffset();
+}
+function sortedKeySentenceItems(){
+  return data.entries.flatMap((e,entryIndex)=>(e.key_sentences||[]).map((s,sentenceIndex)=>({e,s,entryIndex,sentenceIndex})))
+    .sort((a,b)=>{
+      const byDate=(b.e.date||'').localeCompare(a.e.date||'');
+      return byDate || a.entryIndex-b.entryIndex || a.sentenceIndex-b.sentenceIndex;
+    });
+}
+function renderKeys(){
+  const items=sortedKeySentenceItems();
+  const el=document.getElementById('key-list');
+  if(!items.length){el.innerHTML='<div class="empty"><div class="big">⭐</div>還沒有 Key Sentences</div>';return}
+  el.innerHTML=items.map(({e,s})=>`<div class="journal-card"><div class="date">${esc(e.date)}｜${esc(e.title)}</div>${sentenceList([s],e.id)}</div>`).join('');
+}
+function analysisEntryCard(e){
+  const isOpen=analysisOpenEntries.has(e.id);
+  const counts=[
+    (e.vocab||[]).length?`${(e.vocab||[]).length} vocab`:'',
+    (e.patterns||[]).length?`${(e.patterns||[]).length} patterns`:'',
+    (e.collocations||[]).length?`${(e.collocations||[]).length} collocations`:''
+  ].filter(Boolean).join(' · ');
+  return `<div class="journal-card analysis-card ${isOpen?'open':''}" id="analysis-entry-${esc(e.id)}">
+    <div class="analysis-head">
+      <button class="analysis-summary" onclick="toggleAnalysisEntry('${js(e.id)}',this)" aria-expanded="${isOpen}">
+        <div class="analysis-summary-row"><div><div class="date">${esc(e.date)}</div><div class="journal-title">${esc(e.title)}</div><div class="meta">${esc(counts)}</div></div><span class="analysis-chevron" aria-hidden="true">⌄</span></div>
+      </button>
+    </div>
+    <div class="analysis-card-body">${analysisSection('Vocabulary & Chunks',e.vocab)}${analysisSection('Patterns',e.patterns)}${analysisSection('Collocations',e.collocations)}</div>
+  </div>`;
+}
+function renderAnalysis(){
+  const el=document.getElementById('analysis-list');
+  const entries=sortedAnalysisEntries();
+  renderAnalysisNavigation(entries);
+  if(!entries.length){el.innerHTML='<div class="empty"><div class="big">🧩</div>還沒有可分析內容</div>';return}
+  if(!analysisViewInitialized){analysisOpenEntries.clear();analysisOpenEntries.add(entries[0].id);analysisViewInitialized=true}
+  el.innerHTML=entries.map(analysisEntryCard).join('');
+  syncJournalStickyOffset();
+}
 function analysisSection(title,arr){if(!arr||!arr.length)return '';return `<div class="section-title">${title}</div><div class="chip-grid">${arr.map(v=>`<span class="chip" onclick="speak('${js(v.thai||v.pattern||v.text||'')}',this)"><span class="th">${esc(v.thai||v.pattern||v.text||'')}</span>${(v.eng||v.english||v.meaning)?`<span class="en">${esc(v.eng||v.english||v.meaning)}</span>`:''}${v.note?`<span class="en">｜${esc(v.note)}</span>`:''}</span>`).join('')}</div>`}
 function renderFavs(){let items=[];data.entries.forEach(e=>e.sentences.concat(e.key_sentences).filter(s=>s.favorite).forEach(s=>items.push({e,s})));const el=document.getElementById('fav-list');if(!items.length){el.innerHTML='<div class="empty"><div class="big">♥</div>還沒有最愛句子</div>';return}el.innerHTML=items.map(({e,s})=>`<div class="journal-card"><div class="date">${esc(e.date)}｜${esc(e.title)}</div>${sentenceList([s],e.id)}</div>`).join('')}
 function renderReview(){const all=allReviewItems();const due=all.filter(x=>isDue(x.item));document.getElementById('stats-row').innerHTML=`<div class="stat"><div class="num">${due.length}</div><div class="lbl">今日待複習</div></div><div class="stat"><div class="num">${all.filter(x=>x.item.last_review===today()).length}</div><div class="lbl">今日已複習</div></div><div class="stat"><div class="num">${all.length}</div><div class="lbl">複習句總數</div></div>`;const el=document.getElementById('review-list');if(!due.length){el.innerHTML='<div class="empty"><div class="big">✅</div>今天沒有待複習的 Vlog 句子</div>';return}el.innerHTML=due.map(({entry,item})=>`<div class="review-item" id="rev-${item.id}"><div class="date">${esc(entry.date)}｜${esc(entry.title)}</div>${sentenceList([item],entry.id)}<div class="rating-row"><button class="rating-btn r0" onclick="rateItem('${entry.id}','${item.id}',0)">😰 忘了</button><button class="rating-btn r1" onclick="rateItem('${entry.id}','${item.id}',1)">🤔 模糊</button><button class="rating-btn r2" onclick="rateItem('${entry.id}','${item.id}',2)">😊 記得</button><button class="rating-btn r3" onclick="rateItem('${entry.id}','${item.id}',3)">⭐ 很熟</button></div></div>`).join('')}
 function rateItem(eid,sid,r){const e=data.entries.find(x=>x.id===eid);if(!e)return;const s=e.sentences.concat(e.key_sentences).find(x=>x.id===sid);if(!s)return;sm2(s,r);save();renderReview()}
 function toggleSentFav(eid,sid){const e=data.entries.find(x=>x.id===eid);if(!e)return;const s=e.sentences.concat(e.key_sentences).find(x=>x.id===sid);if(!s)return;s.favorite=!s.favorite;s.favorite_updated_at=new Date().toISOString();save();renderJournal();renderKeys();renderFavs()}
 function playEntry(eid,btn){const e=data.entries.find(x=>x.id===eid);if(!e)return;const lines=e.sentences.map(s=>s.thai);speakQueue(lines,btn,600)}
-function deleteEntry(eid){if(!confirm('確定刪除這篇 Vlog？'))return;data.entries=data.entries.filter(e=>e.id!==eid);save();renderJournal()}
-function addVlogFromForm(){let raw=document.getElementById('f-json').value.trim();let e;if(raw){try{e=JSON.parse(raw)}catch(err){alert('JSON 格式錯誤');return}}else{e={date:document.getElementById('f-date').value||today(),title:document.getElementById('f-title').value||'Untitled Vlog',mood:document.getElementById('f-mood').value,tags:document.getElementById('f-tags').value,sentences:[]}}; e.date=e.date||document.getElementById('f-date').value||today();e.title=e.title||document.getElementById('f-title').value||'Untitled Vlog';if(!e.mood)e.mood=document.getElementById('f-mood').value;if(!e.tags)e.tags=document.getElementById('f-tags').value;e.content_updated_at=e.content_updated_at||new Date().toISOString();data.entries.unshift(normEntry(e));save();document.getElementById('f-json').value='';renderJournal()}
+function deleteEntry(eid){if(!confirm('確定刪除這篇 Vlog？'))return;data.entries=data.entries.filter(e=>e.id!==eid);journalOpenEntries.delete(eid);analysisOpenEntries.delete(eid);save();renderJournal();renderAnalysis()}
+function addVlogFromForm(){let raw=document.getElementById('f-json').value.trim();let e;if(raw){try{e=JSON.parse(raw)}catch(err){alert('JSON 格式錯誤');return}}else{e={date:document.getElementById('f-date').value||today(),title:document.getElementById('f-title').value||'Untitled Vlog',mood:document.getElementById('f-mood').value,tags:document.getElementById('f-tags').value,sentences:[]}}; e.date=e.date||document.getElementById('f-date').value||today();e.title=e.title||document.getElementById('f-title').value||'Untitled Vlog';if(!e.mood)e.mood=document.getElementById('f-mood').value;if(!e.tags)e.tags=document.getElementById('f-tags').value;e.content_updated_at=e.content_updated_at||new Date().toISOString();data.entries.unshift(normEntry(e));save();document.getElementById('f-json').value='';renderJournal();renderAnalysis()}
 function openPasteModal(){document.getElementById('paste-modal').style.display='flex';setTimeout(()=>document.getElementById('paste-input').focus(),50)}function closePasteModal(){document.getElementById('paste-modal').style.display='none';document.getElementById('paste-input').value='';document.getElementById('paste-error').style.display='none'}
 function parseEntriesPayload(raw){
   let parsed=typeof raw==='string'?JSON.parse(raw):raw;
@@ -452,7 +668,7 @@ function pasteImport(){
   try{
     const arr=parseEntriesPayload(raw);
     const result=mergeEntries(arr);
-    save();closePasteModal();renderJournal();updateBadges();
+    save();closePasteModal();renderJournal();renderAnalysis();updateBadges();
     alert(`✅ 合併完成！新增 ${result.added} 篇，更新複習進度 ${result.updated} 篇，合併 ${result.merged} 篇。`);
   }catch(e){
     err.textContent='格式錯誤，請確認是正確 JSON';
@@ -467,7 +683,7 @@ function pasteReplace(){
     const arr=parseEntriesPayload(raw);
     if(!confirm(`確定要覆蓋目前全部資料，改成這 ${arr.length} 篇 Vlog？建議先匯出備份。`))return;
     replaceEntries(arr);
-    save();closePasteModal();renderJournal();updateBadges();
+    save();closePasteModal();renderJournal();renderAnalysis();updateBadges();
     alert(`✅ 覆蓋完成！目前共有 ${arr.length} 篇 Vlog。`);
   }catch(e){
     err.textContent='格式錯誤，請確認是正確 JSON';
@@ -493,12 +709,12 @@ function importData(ev){
       const mode=confirm(`按「確定」= 合併匯入並更新進度\n按「取消」= 覆蓋全部資料`);
       if(mode){
         const result=mergeEntries(arr);
-        save();renderJournal();updateBadges();
+        save();renderJournal();renderAnalysis();updateBadges();
         alert(`✅ 合併完成！新增 ${result.added} 篇，更新複習進度 ${result.updated} 篇，合併 ${result.merged} 篇。`);
       }else{
         if(!confirm(`確定要覆蓋目前全部資料，改成這 ${arr.length} 篇 Vlog？建議先匯出備份。`))return;
         replaceEntries(arr);
-        save();renderJournal();updateBadges();
+        save();renderJournal();renderAnalysis();updateBadges();
         alert(`✅ 覆蓋完成！目前共有 ${arr.length} 篇 Vlog。`);
       }
     }catch{
@@ -547,7 +763,7 @@ function saveEditEntry(){
 
 function updateBadges(){document.getElementById('fav-count').textContent=data.entries.reduce((n,e)=>n+e.sentences.concat(e.key_sentences).filter(s=>s.favorite).length,0);document.getElementById('key-count').textContent=data.entries.reduce((n,e)=>n+e.key_sentences.length,0);document.getElementById('review-count').textContent=allReviewItems().filter(x=>isDue(x.item)).length}
 function esc(s){return String(s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}function js(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,' ')}
-document.getElementById('f-date').value=today();load();renderJournal();updateBadges();
+document.getElementById('f-date').value=today();load();setContextNavigation(0);renderJournal();syncJournalStickyOffset();updateBadges();
 </script>
 </body>
 </html>

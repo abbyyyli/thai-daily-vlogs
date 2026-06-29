@@ -146,14 +146,58 @@
   }
   .btn-add:hover { opacity: .88; }
 
-  /* ── Date Group ── */
-  .date-group { margin-bottom: 28px; }
-  .date-label {
-    font-size: 11px; font-weight: 600; color: var(--muted);
-    letter-spacing: .08em; text-transform: uppercase;
-    border-bottom: 1px solid var(--line); padding-bottom: 6px;
-    margin-bottom: 12px;
+  /* ── Collection date navigation ── */
+  #collection-nav {
+    display: none;
+    position: sticky;
+    top: var(--collector-header-height, 0px);
+    z-index: 90;
+    background: rgba(250,248,244,.97);
+    border-bottom: 1px solid var(--line);
+    box-shadow: 0 4px 12px rgba(0,0,0,.035);
+    backdrop-filter: blur(10px);
   }
+  #collection-nav.visible { display: block; }
+  .collection-nav-inner {
+    max-width: 1100px; margin: 0 auto; padding: 9px 24px;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .collection-nav-label {
+    font-size: 11px; font-weight: 600; color: var(--muted);
+    letter-spacing: .05em; white-space: nowrap;
+  }
+  .collection-date-select {
+    min-width: min(260px, 48vw); max-width: 100%;
+    border: 1px solid var(--line); border-radius: 6px; background: var(--card);
+    padding: 5px 8px; font-family: inherit; font-size: 11.5px; color: var(--text);
+  }
+  .collection-nav-spacer { flex: 1; }
+  .collection-nav-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+  /* ── Date Group ── */
+  .date-group {
+    margin-bottom: 28px;
+    scroll-margin-top: calc(var(--collector-sticky-offset, 96px) + 12px);
+  }
+  .date-label {
+    width: 100%; border: 0; border-bottom: 1px solid var(--line);
+    background: none; cursor: pointer; color: var(--muted);
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    font-family: inherit; font-size: 11px; font-weight: 600;
+    letter-spacing: .08em; text-transform: uppercase;
+    padding: 0 0 6px; margin-bottom: 12px; text-align: left;
+  }
+  .date-label:hover { color: var(--accent); }
+  .date-label-main { display: inline-flex; align-items: center; gap: 7px; min-width: 0; }
+  .date-count { font-size: 10.5px; font-weight: 400; letter-spacing: .02em; text-transform: none; color: var(--muted); }
+  .date-chevron { font-size: 14px; line-height: 1; transition: transform .15s ease; }
+  .date-group.collapsed { margin-bottom: 14px; }
+  .date-group.collapsed .date-label { margin-bottom: 0; }
+  .date-group.collapsed .date-chevron { transform: rotate(-90deg); }
+  .date-group.collapsed .date-sentences { display: none; }
+  .date-group.batch-view .date-label { cursor: default; }
+  .date-group.batch-view .date-label:hover { color: var(--muted); }
+  .date-group.batch-view .date-chevron { display: none; }
 
   /* ── Sentence Card ── */
   .sentence-card {
@@ -344,6 +388,9 @@
     header { flex-wrap: wrap; }
     .form-row.cols2, .form-row.cols3 { grid-template-columns: 1fr; }
     .page { padding: 16px; }
+    .collection-nav-inner { padding: 8px 16px; }
+    .collection-date-select { flex: 1; min-width: 0; }
+    .collection-nav-spacer { display: none; }
   }
 </style>
 </head>
@@ -364,6 +411,20 @@
     <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
   </div>
 </header>
+
+<div id="collection-nav" aria-label="收藏區日期導覽">
+  <div class="collection-nav-inner">
+    <span class="collection-nav-label">瀏覽收藏</span>
+    <select id="collection-date-select" class="collection-date-select" onchange="jumpToCollectionDate(this.value)">
+      <option value="">跳到日期…</option>
+    </select>
+    <span class="collection-nav-spacer"></span>
+    <div class="collection-nav-actions">
+      <button class="btn-sm" type="button" onclick="collapseAllCollectionDates()">全部收合</button>
+      <button class="btn-sm" type="button" onclick="expandLatestCollectionDate()">展開最新</button>
+    </div>
+  </div>
+</div>
 
 <!-- Page 1: Collection -->
 <div class="page active" id="page-0">
@@ -497,6 +558,7 @@ function showPage(n) {
     b.classList.toggle('active', i === n);
   });
   if (n === 0) renderCollection();
+  else updateCollectionNav();
   if (n === 1) renderFavorites();
   if (n === 2) renderReview();
 }
@@ -676,9 +738,79 @@ function batchDeleteSelected() {
   renderReview();
 }
 
+let collapsedCollectionDates = new Set();
+let collectionGroupsInitialized = false;
+
+function getCollectionDates() {
+  return [...new Set(data.sentences.map(s => s.date || '').filter(Boolean))]
+    .sort((a, b) => b.localeCompare(a));
+}
+
+function syncCollectionNavOffset() {
+  const header = document.querySelector('header');
+  const nav = document.getElementById('collection-nav');
+  if (!header || !nav) return;
+  const headerHeight = Math.ceil(header.getBoundingClientRect().height || 0);
+  const navHeight = nav.classList.contains('visible') ? Math.ceil(nav.getBoundingClientRect().height || 0) : 0;
+  document.documentElement.style.setProperty('--collector-header-height', `${headerHeight}px`);
+  document.documentElement.style.setProperty('--collector-sticky-offset', `${headerHeight + navHeight}px`);
+}
+
+function updateCollectionNav() {
+  const nav = document.getElementById('collection-nav');
+  const select = document.getElementById('collection-date-select');
+  const collectionActive = document.getElementById('page-0')?.classList.contains('active');
+  const visible = collectionActive && !batchMode && data.sentences.length > 0;
+  nav.classList.toggle('visible', visible);
+  if (visible) {
+    const dates = getCollectionDates();
+    select.innerHTML = '<option value="">跳到日期…</option>' + dates.map(date => {
+      const count = data.sentences.filter(s => s.date === date).length;
+      return `<option value="${date}">${date}（${count} 句）</option>`;
+    }).join('');
+    select.value = '';
+  }
+  requestAnimationFrame(syncCollectionNavOffset);
+}
+
+function toggleCollectionDateGroup(date) {
+  if (batchMode) return;
+  if (collapsedCollectionDates.has(date)) collapsedCollectionDates.delete(date);
+  else collapsedCollectionDates.add(date);
+  renderCollection();
+}
+
+function collapseAllCollectionDates() {
+  getCollectionDates().forEach(date => collapsedCollectionDates.add(date));
+  collectionGroupsInitialized = true;
+  renderCollection();
+}
+
+function expandLatestCollectionDate() {
+  const dates = getCollectionDates();
+  if (!dates.length) return;
+  collapsedCollectionDates = new Set(dates.slice(1));
+  collectionGroupsInitialized = true;
+  renderCollection();
+}
+
+function jumpToCollectionDate(date) {
+  const select = document.getElementById('collection-date-select');
+  if (!date) return;
+  collapsedCollectionDates.delete(date);
+  collectionGroupsInitialized = true;
+  renderCollection();
+  requestAnimationFrame(() => {
+    const group = document.getElementById(`collection-date-${date}`);
+    if (group) group.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (select) select.value = '';
+  });
+}
+
 function renderCollection() {
   const list = document.getElementById('collection-list');
   renderBatchToolbar();
+  updateCollectionNav();
   const sentencesToRender = batchMode ? getBatchVisibleSentences() : data.sentences;
   if (!sentencesToRender.length) {
     const empty = data.sentences.length
@@ -695,12 +827,29 @@ function renderCollection() {
   });
 
   const sorted = Object.keys(groups).sort((a,b) => b.localeCompare(a));
-  list.innerHTML = sorted.map(date => `
-    <div class="date-group">
-      <div class="date-label">${date}</div>
-      ${groups[date].map(s => sentenceCard(s)).join('')}
-    </div>
-  `).join('');
+  if (!collectionGroupsInitialized && !batchMode) {
+    collapsedCollectionDates = new Set(sorted.slice(1));
+    collectionGroupsInitialized = true;
+  }
+  const visibleDates = new Set(sorted);
+  collapsedCollectionDates = new Set([...collapsedCollectionDates].filter(date => visibleDates.has(date) || getCollectionDates().includes(date)));
+
+  list.innerHTML = sorted.map(date => {
+    const isCollapsed = !batchMode && collapsedCollectionDates.has(date);
+    const count = groups[date].length;
+    return `
+      <section class="date-group${isCollapsed ? ' collapsed' : ''}${batchMode ? ' batch-view' : ''}" id="collection-date-${date}">
+        <button class="date-label" type="button" ${batchMode ? 'aria-disabled="true"' : `onclick="toggleCollectionDateGroup('${date}')" aria-expanded="${!isCollapsed}"`}>
+          <span class="date-label-main"><span>${date}</span><span class="date-count">${count} 句</span></span>
+          <span class="date-chevron" aria-hidden="true">⌄</span>
+        </button>
+        <div class="date-sentences">
+          ${groups[date].map(s => sentenceCard(s)).join('')}
+        </div>
+      </section>
+    `;
+  }).join('');
+  requestAnimationFrame(syncCollectionNavOffset);
 }
 
 function sentenceCard(s, showReviewInfo = false) {
@@ -1177,6 +1326,7 @@ setTimeout(() => {
 
 renderCollection();
 updateBadges();
+window.addEventListener('resize', () => requestAnimationFrame(syncCollectionNavOffset));
 </script>
 
 <div id="paste-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center">
