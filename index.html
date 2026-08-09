@@ -158,6 +158,80 @@
       gap: 12px;
     }
 
+    .learning-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .resource-card {
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 190px;
+      padding: 20px;
+      color: inherit;
+      text-decoration: none;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+    }
+
+    .resource-card::after {
+      content: "";
+      position: absolute;
+      width: 90px;
+      height: 90px;
+      right: -45px;
+      bottom: -48px;
+      border-radius: 50%;
+      background: var(--resource-accent);
+      opacity: .12;
+    }
+
+    .resource-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+      border-color: var(--resource-border);
+    }
+
+    .resource-card.notes {
+      --resource-accent: var(--purple);
+      --resource-border: var(--purple-mid);
+      background: linear-gradient(145deg, rgba(124,99,192,.09), rgba(255,255,255,.92));
+    }
+
+    .resource-card.songs {
+      --resource-accent: var(--blue);
+      --resource-border: var(--blue-mid);
+      background: linear-gradient(145deg, rgba(58,127,212,.09), rgba(232,247,239,.55));
+    }
+
+    .resource-icon { font-size: 1.42rem; margin-bottom: 10px; }
+    .resource-card h2 {
+      margin: 0 0 5px;
+      color: var(--text);
+      font-size: 1.03rem;
+      font-weight: 820;
+      letter-spacing: -.02em;
+    }
+    .resource-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: .82rem;
+      line-height: 1.55;
+    }
+    .resource-card .go {
+      margin-top: auto;
+      padding-top: 13px;
+      color: var(--resource-accent);
+      font-size: .79rem;
+      font-weight: 720;
+    }
+
     .private-card {
       position: relative;
       background:
@@ -262,6 +336,8 @@
       .wrap { padding: 34px 14px 56px; }
       h1 { font-size: 1.75rem; }
       .feature h2 { font-size: 1.12rem; }
+      .learning-grid { grid-template-columns: 1fr; }
+      .resource-card { min-height: 0; }
     }
   </style>
 </head>
@@ -295,6 +371,26 @@
           </div>
           <p>精華句庫、最愛句、重點 vocab、notes 與間隔複習（SRS）。適合收藏每天想反覆看的高價值泰文句子。</p>
           <span class="go">開啟 Sentence Collector →</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="section-group">
+      <div class="section-title">學習延伸</div>
+
+      <div class="learning-grid">
+        <a class="resource-card notes" href="https://abbyyyli.github.io/-Daily-Notes-Handbook-2/" target="_blank" rel="noopener">
+          <div class="resource-icon">📚</div>
+          <h2>Thai Notes Handbook</h2>
+          <p>每日生活泰文的四語複習手冊，可搜尋、收藏並標記學習進度。</p>
+          <span class="go">開啟 Handbook →</span>
+        </a>
+
+        <a class="resource-card songs" href="https://abbyyyli.github.io/thai_songs/" target="_blank" rel="noopener">
+          <div class="resource-icon">🎧</div>
+          <h2>Thai Song Lab</h2>
+          <p>從歌曲拆解歌詞、單字、句型與自然語感，適合聽力和 shadowing。</p>
+          <span class="go">開啟 Song Lab →</span>
         </a>
       </div>
     </div>
