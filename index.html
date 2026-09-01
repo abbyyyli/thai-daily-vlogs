@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
-  <title>我的泰文日記入口</title>
+  <title>Thai Tools · Original Fonts</title>
   <style>
     :root {
       --bg: #fffaf4;
@@ -15,10 +15,9 @@
       --shadow: 0 8px 22px rgba(74,45,18,.07);
       --shadow-hover: 0 14px 32px rgba(74,45,18,.11);
       --radius: 18px;
-      --orange: #f2a35d; --orange-soft: #fff1df;
-      --green: #4a9e6e;  --green-soft: #e8f7ef;  --green-mid: #a8dfc0;
-      --purple: #7c63c0; --purple-soft: #f0ecff;  --purple-mid: #c4b5f7;
-      --blue: #3a7fd4;   --blue-soft: #ddeeff;    --blue-mid: #9fc6f0;
+      --purple: #7c63c0;
+      --purple-soft: #f0ecff;
+      --purple-mid: #c4b5f7;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -36,7 +35,6 @@
 
     .wrap { max-width: 680px; margin: 0 auto; padding: 52px 20px 72px; }
 
-    /* ── Header ── */
     .eyebrow {
       font-size: 11px;
       font-weight: 720;
@@ -48,108 +46,27 @@
       align-items: center;
       gap: 8px;
     }
+
     .eyebrow::before {
       content: "";
-      display: inline-block;
-      width: 18px; height: 2px;
+      width: 18px;
+      height: 2px;
       background: var(--purple);
       border-radius: 2px;
     }
 
     h1 {
-      font-size: 2.1rem;
+      font-size: 2rem;
       font-weight: 860;
       letter-spacing: -.03em;
       line-height: 1.18;
-      color: var(--text);
       margin-bottom: 10px;
     }
 
     .subtitle {
-      font-size: 0.95rem;
+      font-size: .95rem;
       color: var(--muted);
-      margin-bottom: 44px;
-      line-height: 1.7;
-    }
-
-    /* ── Section title ── */
-    .section-title {
-      font-size: 0.78rem;
-      font-weight: 760;
-      letter-spacing: .14em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin: 0 0 14px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .section-title::after {
-      content: ""; flex: 1; height: 1px; background: var(--line);
-    }
-
-    .section-group { margin-bottom: 36px; }
-
-    /* ── Card ── */
-    .card {
-      display: block;
-      text-decoration: none;
-      color: inherit;
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      padding: 18px 20px;
-      margin-bottom: 10px;
-      box-shadow: var(--shadow);
-      transition: transform .15s ease, box-shadow .15s ease;
-    }
-
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-hover);
-    }
-
-    .card h2 {
-      font-size: 1rem;
-      font-weight: 760;
-      margin: 0 0 3px;
-      color: var(--text);
-      letter-spacing: -.01em;
-    }
-
-    .card p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 0.86rem;
-      line-height: 1.5;
-    }
-
-    /* ── Featured (vlog) card ── */
-    .feature {
-      position: relative;
-      background:
-        linear-gradient(135deg, rgba(124,99,192,.10), rgba(242,163,93,.08)),
-        var(--card);
-      border: 1px solid var(--purple-mid);
-      border-radius: var(--radius);
-      padding: 24px 24px 22px;
-      margin-bottom: 10px;
-      box-shadow: var(--shadow);
-      display: block;
-      text-decoration: none;
-      color: inherit;
-      transition: transform .15s ease, box-shadow .15s ease;
-    }
-    .feature:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
-    .feature .icon { font-size: 1.7rem; margin-bottom: 8px; }
-    .feature h2 {
-      font-size: 1.25rem; font-weight: 820; letter-spacing: -.02em;
-      margin: 0 0 5px; color: var(--text);
-    }
-    .feature p { margin: 0; color: var(--muted); font-size: 0.9rem; }
-    .feature .go {
-      margin-top: 14px; display: inline-flex; align-items: center; gap: 6px;
-      font-size: 0.83rem; font-weight: 700; color: var(--purple);
+      margin-bottom: 36px;
     }
 
     .tool-grid {
@@ -158,82 +75,7 @@
       gap: 12px;
     }
 
-    .learning-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .resource-card {
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      min-height: 190px;
-      padding: 20px;
-      color: inherit;
-      text-decoration: none;
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
-    }
-
-    .resource-card::after {
-      display: none;
-    }
-
-    .resource-card:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-hover);
-      border-color: var(--resource-border);
-    }
-
-    .resource-card.notes,
-    .resource-card.songs {
-      --resource-accent: #356f91;
-      --resource-border: rgba(65,121,153,.52);
-      border-color: rgba(91,143,171,.34);
-      background:
-        radial-gradient(circle at 4% 100%, rgba(255,255,255,.48), transparent 44%),
-        linear-gradient(145deg, #edf7fb 0%, #d9ecf4 56%, #c9e1ec 100%);
-      box-shadow: 0 10px 25px rgba(57,103,128,.11), inset 0 1px rgba(255,255,255,.62);
-    }
-
-    .resource-card.notes:hover,
-    .resource-card.songs:hover { border-color: var(--resource-border); }
-
-    .resource-card.notes h2,
-    .resource-card.songs h2 { color: #2f3b42; }
-
-    .resource-card.notes p,
-    .resource-card.songs p { color: #66737a; }
-
-    .resource-icon { font-size: 1.42rem; margin-bottom: 10px; }
-    .resource-card h2 {
-      margin: 0 0 5px;
-      color: var(--text);
-      font-size: 1.03rem;
-      font-weight: 820;
-      letter-spacing: -.02em;
-    }
-    .resource-card p {
-      margin: 0;
-      color: var(--muted);
-      font-size: .82rem;
-      line-height: 1.55;
-    }
-    .resource-card .go {
-      margin-top: auto;
-      padding-top: 13px;
-      color: var(--resource-accent);
-      font-size: .79rem;
-      font-weight: 720;
-    }
-
     .private-card {
-      position: relative;
       background:
         linear-gradient(135deg, rgba(124,99,192,.10), rgba(242,163,93,.08)),
         var(--card);
@@ -252,164 +94,93 @@
       box-shadow: var(--shadow-hover);
     }
 
-    .private-card .title-row {
+    .tag {
+      display: inline-block;
+      font-size: .72rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 999px;
+      margin-bottom: 7px;
+      background: var(--purple-soft);
+      color: var(--purple);
+      border: 1px solid var(--purple-mid);
+    }
+
+    .title-row {
       display: flex;
       align-items: center;
       gap: 9px;
       margin: 2px 0 4px;
     }
 
-    .private-card .icon {
-      font-size: 1.08rem;
-      line-height: 1;
-    }
+    .icon { font-size: 1.08rem; line-height: 1; }
 
-    .private-card h2 {
+    h2 {
       font-size: 1.05rem;
       font-weight: 820;
       letter-spacing: -.02em;
       margin: 0;
-      color: var(--text);
     }
 
     .private-card p {
       margin: 0;
       color: var(--muted);
-      font-size: 0.86rem;
+      font-size: .86rem;
       line-height: 1.55;
     }
 
-    .private-card .go {
+    .go {
       margin-top: 10px;
       display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.8rem;
+      font-size: .8rem;
       font-weight: 700;
       color: var(--purple);
     }
 
-    /* ── Tags ── */
-    .tag {
-      display: inline-block;
-      font-size: 0.72rem;
-      font-weight: 700;
-      padding: 3px 9px;
-      border-radius: 999px;
-      margin-bottom: 7px;
-      background: #f3eadc;
-      color: #7a5433;
-      border: 1px solid #e0cdb5;
-    }
-    .tag.lock {
-      background: var(--purple-soft); color: var(--purple);
-      border-color: var(--purple-mid);
-    }
-
-    /* ── Footer ── */
     .footer {
-      margin-top: 48px;
-      padding-top: 24px;
+      margin-top: 42px;
+      padding-top: 20px;
       border-top: 1px solid var(--line);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .footer-note { font-size: 0.81rem; color: var(--muted); }
-    .footer-link {
-      font-size: 0.8rem;
-      font-weight: 640;
       color: var(--muted);
-      text-decoration: none;
-      padding: 5px 11px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.72);
-      transition: all .15s ease;
+      font-size: .8rem;
     }
-    .footer-link:hover { color: var(--text); border-color: rgba(88,63,35,.3); }
 
     @media (max-width: 600px) {
-      body { padding: 0; }
       .wrap { padding: 34px 14px 56px; }
-      h1 { font-size: 1.75rem; }
-      .feature h2 { font-size: 1.12rem; }
-      .learning-grid { grid-template-columns: 1fr; }
-      .resource-card { min-height: 0; }
+      h1 { font-size: 1.7rem; }
     }
   </style>
 </head>
 
 <body>
   <main class="wrap">
+    <div class="eyebrow">Original Fonts</div>
+    <h1>原版字體 Thai Tools</h1>
+    <p class="subtitle">保留原本字體設定的 Thai Sentence Collector 與 Thai Daily Vlog Journal。</p>
 
-    <div class="eyebrow">Private Hub</div>
-    <h1>我的泰文日記入口</h1>
-    <p class="subtitle">這是只給自己用的入口頁，跟公開的學習首頁分開。</p>
+    <div class="tool-grid">
+      <a class="private-card" href="./thai-vlog-journal-original-font.html">
+        <span class="tag">Original Font</span>
+        <div class="title-row">
+          <div class="icon">🎥</div>
+          <h2>Thai Daily Vlog Journal</h2>
+        </div>
+        <p>原版字體版本，功能與資料邏輯維持原本設定。</p>
+        <span class="go">開啟 Vlog Journal →</span>
+      </a>
 
-    <div class="section-group">
-      <div class="section-title">私人紀錄</div>
-
-      <div class="tool-grid">
-        <a class="private-card" href="./thai-vlog-journal.html">
-          <span class="tag lock">🔒 Private</span>
-          <div class="title-row">
-            <div class="icon">🎥</div>
-            <h2>Thai Daily Vlog Journal</h2>
-          </div>
-          <p>每日生活泰文日記、自言自語、Key Sentences、單字句型整理與間隔複習（SRS）。資料存在你自己的瀏覽器裡。</p>
-          <span class="go">開啟 Vlog Journal →</span>
-        </a>
-
-        <a class="private-card" href="./thai-sentence-collector.html">
-          <span class="tag lock">🔒 Private</span>
-          <div class="title-row">
-            <div class="icon">🌿</div>
-            <h2>Thai Sentence Collector</h2>
-          </div>
-          <p>精華句庫、最愛句、重點 vocab、notes 與間隔複習（SRS）。適合收藏每天想反覆看的高價值泰文句子。</p>
-          <span class="go">開啟 Sentence Collector →</span>
-        </a>
-      </div>
-    </div>
-
-    <div class="section-group">
-      <div class="section-title">學習延伸</div>
-
-      <div class="learning-grid">
-        <a class="resource-card notes" href="https://abbyyyli.github.io/-Daily-Notes-Handbook-2/" target="_blank" rel="noopener">
-          <div class="resource-icon">📚</div>
-          <h2>Thai Notes Handbook</h2>
-          <p>每日生活泰文的四語複習手冊，可搜尋、收藏並標記學習進度。</p>
-          <span class="go">開啟 Handbook →</span>
-        </a>
-
-        <a class="resource-card songs" href="https://abbyyyli.github.io/thai_songs/" target="_blank" rel="noopener">
-          <div class="resource-icon">🎧</div>
-          <h2>Thai Song Lab</h2>
-          <p>從歌曲拆解歌詞、單字、句型與自然語感，適合聽力和 shadowing。</p>
-          <span class="go">開啟 Song Lab →</span>
-        </a>
-      </div>
-    </div>
-
-    <div class="section-group">
-      <div class="section-title">其他入口</div>
-
-      <a class="card" href="https://abbyyyli.github.io/thai-index/" target="_blank" rel="noopener">
-        <span class="tag">Public</span>
-        <h2>公開學習首頁</h2>
-        <p>單字庫、課本筆記、發音工具等公開資源，可以分享的那一頁。</p>
+      <a class="private-card" href="./thai-sentence-collector-original-font.html">
+        <span class="tag">Original Font</span>
+        <div class="title-row">
+          <div class="icon">🌿</div>
+          <h2>Thai Sentence Collector</h2>
+        </div>
+        <p>原版字體版本，功能與資料邏輯維持原本設定。</p>
+        <span class="go">開啟 Sentence Collector →</span>
       </a>
     </div>
 
-    <footer class="footer">
-      <div class="footer-note">Private · 不對外分享</div>
-      <a href="https://github.com/abbyyyli/thai-daily-vlogs.git" target="_blank" rel="noopener" class="footer-link">🗂️ GitHub</a>
-    </footer>
-
+    <footer class="footer">Original font archive · Private</footer>
   </main>
 </body>
 </html>
